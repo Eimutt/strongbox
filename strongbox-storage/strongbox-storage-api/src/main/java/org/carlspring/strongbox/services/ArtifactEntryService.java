@@ -60,6 +60,15 @@ public interface ArtifactEntryService
                           Map<String, String> coordinates,
                           boolean strict);
 
+    String TryQuery(Collection<Pair<String, String>> storageRepositoryPairList,
+                        Map<String, String> coordinates,
+                        boolean strict);
+
+    String TryQuery(String storageId,
+                        String repositoryId,
+                        Map<String, String> coordinates,
+                        boolean strict);
+
     Long countArtifacts(Collection<Pair<String, String>> storageRepositoryPairList,
                         Map<String, String> coordinates,
                         boolean strict);

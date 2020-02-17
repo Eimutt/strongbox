@@ -225,6 +225,27 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
     }
 
     @Override
+    public String TryQuery(Collection<Pair<String, String>> storageRepositoryPairList,
+                               Map<String, String> coordinates,
+                               boolean strict)
+    {
+        coordinates = prepareParameterMap(coordinates, strict);
+        String sQuery = buildCoordinatesQuery(storageRepositoryPairList, coordinates.keySet(), Collections.emptySet(), 1, 1, null, strict);
+        return sQuery;
+    }
+
+    @Override
+    public String TryQuery(String storageId,
+                               String repositoryId,
+                               Map<String, String> coordinates,
+
+                               boolean strict)
+    {
+        return TryQuery(toList(storageId, repositoryId), coordinates,
+                              strict);
+    }
+
+    @Override
     public Long countArtifacts(String storageId,
                                String repositoryId,
                                Map<String, String> coordinates,
