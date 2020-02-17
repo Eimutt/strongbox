@@ -1,7 +1,10 @@
 # common ignore
 *~
 MANIFEST.MF
-target/
+
+target/site/clover/*
+!target/site/clover/agg-pkgs.html
+
 tmp/
 *.versionsBackup
 .m2/
