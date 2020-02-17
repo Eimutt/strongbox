@@ -266,12 +266,15 @@ public class PypiArtifactCoordinatesTest
                            // String packaging
     @Test
     public void branch1(){
+      //condition StringUtils.isBlank(packaging) == true
       assertThatExceptionOfType(IllegalArgumentException.class)
               .isThrownBy(() -> new PypiArtifactCoordinates("", "3.1.6", "", "cp37", "cp37m", "win_amd64", null));
     }
 
     @Test
     public void branch7(){
+      // condition !StringUtils.isBlank(build) && !Character.isDigit(build.charAt(0)) == true
+      // previsous conditions false
       assertThatExceptionOfType(IllegalArgumentException.class)
               .isThrownBy(() -> new PypiArtifactCoordinates("distribution", "1.0", "a", "py27", "none", "any", "whl"));
     }

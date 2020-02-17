@@ -118,7 +118,7 @@ public class NuspecTest
       //this.major == that.major
       //this.minor == that.minor
       //this.patch == that.patch
-      // special `= null
+      //special `== null
       SemanticVersion a = new SemanticVersion(1,1,1,null,"a");
       SemanticVersion b = new SemanticVersion(1,1,1,"a","b");
       assertThat(a.compareTo(b)).isEqualTo(-1);
@@ -128,8 +128,8 @@ public class NuspecTest
       //this.major == that.major
       //this.minor == that.minor
       //this.patch == that.patch
-      // this.special `= null
-      // that.special != null
+      //this.special == null
+      //that.special != null
       SemanticVersion a = new SemanticVersion(1,1,1,null,null);
       SemanticVersion b = new SemanticVersion(1,1,1,"a","b");
       assertThat(a.compareTo(b)).isEqualTo(1);
@@ -140,8 +140,8 @@ public class NuspecTest
       //this.major == that.major
       //this.minor == that.minor
       //this.patch == that.patch
-      // this.special `= null
-      // that.special != null
+      //this.special != null
+      //that.special == null
       SemanticVersion a = new SemanticVersion(1,1,1,null,"a");
       SemanticVersion b = new SemanticVersion(1,1,1,null,null);
       assertThat(a.compareTo(b)).isEqualTo(-1);
