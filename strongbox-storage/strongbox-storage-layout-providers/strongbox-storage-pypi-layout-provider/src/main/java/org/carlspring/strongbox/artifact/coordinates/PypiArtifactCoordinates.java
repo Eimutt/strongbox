@@ -8,17 +8,18 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
+import java.io.PrintWriter;
 
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class is an {@link ArtifactCoordinates} implementation for pypi artifacts
  *
- * Proper path for this coordinates is in the format of: 
+ * Proper path for this coordinates is in the format of:
  * {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl.
  * for wheel packages and {distribution}-{version}.tar.gz for source packages
  * Examples: distribution-1.0.1-1-py27-none-any.whl, distribution-1.0.1.tar.gz
- * 
+ *
  * @author alecg956
  */
 @Entity
@@ -52,6 +53,30 @@ public class PypiArtifactCoordinates
 
     public static final String WHEEL_EXTENSION = "whl";
 
+    public static boolean[] cover = new boolean[8];
+
+    public static void outputCoverage(){
+      PrintWriter writer = null;
+      try{
+        writer = new PrintWriter("../../CoveragePypi.txt", "UTF-8");
+        writer.println("----------------------------                 ----------------------------");
+        writer.println("---------------------------- OUTPUT COVERAGE ----------------------------");
+        writer.println("----------------------------      PYPI       ----------------------------");
+        for (int i = 0 ; i < cover.length; i++) {
+          writer.println("Branch "+i+" -> "+cover[i]);
+        }
+      } catch(Exception e){
+        System.err.println(e);
+      } finally{
+        writer.close();
+      }
+    }
+
+    public static boolean setBranch(int b){
+      cover[b] = true;
+      return true;
+    }
+
     public PypiArtifactCoordinates()
     {
         resetCoordinates(DISTRIBUTION,
@@ -62,6 +87,7 @@ public class PypiArtifactCoordinates
                          PLATFORM,
                          PACKAGING);
     }
+
 
     /**
      * This method takes in all artifact coordinates of a PyPi package filename, with build being
@@ -84,21 +110,25 @@ public class PypiArtifactCoordinates
                                    String packaging)
     {
         this();
-
+        setBranch(0);
         if (StringUtils.isBlank(packaging))
         {
+            setBranch(1);
             throw new IllegalArgumentException("The packaging field is mandatory.");
         }
 
         if (!packaging.equals(SOURCE_EXTENSION) && !packaging.equals(WHEEL_EXTENSION))
         {
+            setBranch(2);
             throw new IllegalArgumentException("The artifact has incorrect packaging");
         }
 
         if (packaging.equals(SOURCE_EXTENSION))
         {
+            setBranch(3);
             if (StringUtils.isBlank(distribution) || StringUtils.isBlank(version))
             {
+                setBranch(4);
                 throw new IllegalArgumentException(
                         "The distribution and version fields are mandatory for source package.");
             }
@@ -106,15 +136,18 @@ public class PypiArtifactCoordinates
 
         if (packaging.equals(WHEEL_EXTENSION))
         {
+            setBranch(5);
             if (StringUtils.isBlank(distribution) || StringUtils.isBlank(version) || StringUtils.isBlank(platform)
                 || StringUtils.isBlank(languageImplementationVersion) || StringUtils.isBlank(abi))
             {
+                setBranch(6);
                 throw new IllegalArgumentException("The distribution, version, languageImplementationVersion, abi, and " +
                                                    "platform fields are mandatory for wheel package.");
             }
 
             if (!StringUtils.isBlank(build) && !Character.isDigit(build.charAt(0)))
             {
+                setBranch(7);
                 throw new IllegalArgumentException("Illegal build tag!");
             }
         }

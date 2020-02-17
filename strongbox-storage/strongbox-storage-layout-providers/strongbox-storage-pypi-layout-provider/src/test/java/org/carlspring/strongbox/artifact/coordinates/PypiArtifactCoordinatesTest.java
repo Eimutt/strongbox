@@ -3,6 +3,7 @@ package org.carlspring.strongbox.artifact.coordinates;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -10,7 +11,7 @@ import java.util.*;
 
 /**
  * Class to test the functionality of PypiArtifactCoordinates and PypiArtifactCoordinatesUtils
- * 
+ *
  * @author alecg956
  */
 public class PypiArtifactCoordinatesTest
@@ -224,7 +225,7 @@ public class PypiArtifactCoordinatesTest
     }
 
     /**
-     * Test that the parser handles the case that build tag is specified but empty and if the build tag is 
+     * Test that the parser handles the case that build tag is specified but empty and if the build tag is
      * specified but does not start with a number
      */
     @Test
@@ -255,5 +256,10 @@ public class PypiArtifactCoordinatesTest
                                                    packageExamples.get(currentIndex));
 
         assertThat(coordsParsed.toString()).isEqualTo(expectedPackagePath);
+    }
+
+    @AfterAll
+    public static void getCoverage(){
+      PypiArtifactCoordinates.outputCoverage();
     }
 }

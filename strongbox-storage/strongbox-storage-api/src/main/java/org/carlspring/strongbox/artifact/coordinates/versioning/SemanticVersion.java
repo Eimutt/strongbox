@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import java.io.PrintWriter;
 
 /**
  * Version following semantic defined by <a href="http://semver.org/">Semantic Versioning</a> document.
@@ -58,7 +59,7 @@ public class SemanticVersion
         SPECIAL
     }
 
-    private static final String FORMAT = "(\\d+)\\.(\\d+)(?:\\.)?(\\d*)(\\.|-|\\+)?([0-9A-Za-z-.]*)?";
+    public static final String FORMAT = "(\\d+)\\.(\\d+)(?:\\.)?(\\d*)(\\.|-|\\+)?([0-9A-Za-z-.]*)?";
 
     private static final Pattern PATTERN = Pattern.compile(SemanticVersion.FORMAT);
 
@@ -584,44 +585,81 @@ public class SemanticVersion
         }
     }
 
+    public static boolean[] cover = new boolean[12];
+
+    public static void outputCoverage(){
+      PrintWriter writer = null;
+      try{
+        writer = new PrintWriter("../../CoverageSemantic.txt", "UTF-8");
+        writer.println("----------------------------                 ----------------------------");
+        writer.println("---------------------------- OUTPUT COVERAGE ----------------------------");
+        writer.println("----------------------------    SEMANTIC     ----------------------------");
+        for (int i = 0 ; i < cover.length; i++) {
+          writer.println("Branch "+i+" -> "+cover[i]);
+        }
+      } catch(Exception e){
+        System.err.println(e);
+      } finally{
+        writer.close();
+      }
+    }
+
+    public static boolean setBranch(int b){
+      cover[b] = true;
+      return true;
+    }
+
     @Override
     public int compareTo(final SemanticVersion other)
     {
+        setBranch(0);
         if (equals(other))
         {
+            setBranch(1);
             return 0;
         }
 
         if (this.major < other.major)
         {
+            setBranch(2);
             return -1;
         }
         else if (this.major == other.major)
         {
+            setBranch(3);
             if (this.minor < other.minor)
             {
+                setBranch(4);
                 return -1;
             }
             else if (this.minor == other.minor)
             {
+                setBranch(5);
                 if (this.patch < other.patch)
                 {
+                    setBranch(6);
                     return -1;
                 }
                 else if (this.patch == other.patch)
                 {
+                    setBranch(7);
                     if (this.special != null && other.special != null)
                     {
+                        setBranch(8);
                         return this.special.compareTo(other.special);
                     }
                     else if (other.special != null)
                     {
+                        setBranch(9);
                         return 1;
                     }
                     else if (this.special != null)
                     {
+                        setBranch(10);
                         return -1;
-                    } // else handled by previous equals check
+                    }
+                    setBranch(11);
+                    // else handled by previous equals check
                 }
             }
         }

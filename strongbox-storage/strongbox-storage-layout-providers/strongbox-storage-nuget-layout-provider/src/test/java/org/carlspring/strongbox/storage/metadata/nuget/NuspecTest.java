@@ -103,6 +103,7 @@ public class NuspecTest
         assertThat(result.isRequireLicenseAcceptance()).as("License Verification Required").isFalse();
         assertThat(result.getDescription()).as("Description").isEqualTo("Implementing ProjecWise API isolation level contracts");
         assertThat(result.getCopyright()).as("Rights").isEqualTo("NEOLANT");
+        SemanticVersion.outputCoverage();
     }
 
     /**
