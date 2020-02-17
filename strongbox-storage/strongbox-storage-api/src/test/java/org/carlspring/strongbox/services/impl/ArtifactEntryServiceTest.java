@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +80,13 @@ public class ArtifactEntryServiceTest
         displayAllEntries(groupId);
     }
 
+    /*
+    @AfterAll
+    static void printResultCoverage(){
+        artifactEntryService.printResultCoverage();
+    }
+    */
+
     private String getGroupId(String groupId,
                               TestInfo testInfo)
     {
@@ -100,6 +108,7 @@ public class ArtifactEntryServiceTest
         artifactCoordinatesService.delete(artifactCoordinates);
 
         displayAllEntries(groupId);
+        artifactEntryService.printResultCoverage();
     }
 
     private List<ArtifactEntry> findAll(final String groupId)

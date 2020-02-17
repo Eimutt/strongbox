@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.AfterEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,6 +61,15 @@ public class ConfigurationManagementServiceImplTest
 
     @Inject
     private ConfigurationManagementService configurationManagementService;
+
+
+    @AfterEach
+    public void cleanup()
+    {
+        
+        System.out.println("TEST DONE LOWLWEO");
+        configurationManagementService.printResultCoverage();
+    }
 
     @Test
     public void groupRepositoriesShouldBeSortedAsExpected()

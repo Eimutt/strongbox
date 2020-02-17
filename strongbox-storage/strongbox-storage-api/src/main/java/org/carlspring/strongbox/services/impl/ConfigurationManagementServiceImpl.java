@@ -58,6 +58,9 @@ public class ConfigurationManagementServiceImpl
     @Inject
     private PlatformTransactionManager transactionManager;
 
+
+    private boolean[] branches_checked = new boolean[18];
+
     /**
      * Yes, this is a state object.
      * It is protected by the {@link #configurationLock} here
@@ -412,6 +415,21 @@ public class ConfigurationManagementServiceImpl
                      }, false);
     }
 
+    private void testHelp(int branchN){
+        branches_checked[branchN] = true;
+        
+    }
+
+    @Override
+    public void printResultCoverage(){
+        for(int i = 0; i < branches_checked.length; i++){
+            System.out.print("Branch ");
+            System.out.print(i);
+            System.out.print(" = ");
+            System.out.println(branches_checked[i]);
+        }
+    }
+
     @Override
     public void setRepositoryArtifactCoordinateValidators() throws IOException
     {
@@ -421,10 +439,12 @@ public class ConfigurationManagementServiceImpl
 
                          if (storages != null && !storages.isEmpty())
                          {
+                            testHelp(0);
                              for (StorageDto storage : storages.values())
                              {
                                  if (storage.getRepositories() != null && !storage.getRepositories().isEmpty())
                                  {
+                                    testHelp(2);
                                      for (Repository repository : storage.getRepositories().values())
                                      {
                                          LayoutProvider layoutProvider = layoutProviderRegistry.getProvider(
@@ -437,6 +457,7 @@ public class ConfigurationManagementServiceImpl
                                          //    for a repository.
                                          if (layoutProvider != null)
                                          {
+                                            testHelp(4);
                                              @SuppressWarnings("unchecked")
                                              Set<String> defaultArtifactCoordinateValidators = layoutProvider.getDefaultArtifactCoordinateValidators();
                                              if ((repository.getArtifactCoordinateValidators() == null ||
@@ -444,12 +465,21 @@ public class ConfigurationManagementServiceImpl
                                                    repository.getArtifactCoordinateValidators().isEmpty())) &&
                                                  defaultArtifactCoordinateValidators != null)
                                              {
+                                                testHelp(6);
                                                  ((RepositoryDto)repository).setArtifactCoordinateValidators(defaultArtifactCoordinateValidators);
+                                             } else {
+                                                testHelp(7);
                                              }
+                                         } else {
+                                            testHelp(5);
                                          }
                                      }
+                                 } else {
+                                    testHelp(3);
                                  }
                              }
+                         } else {
+                            testHelp(2);
                          }
                      });
     }

@@ -40,6 +40,8 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
         return artifactEntry.getUuid() == null;
     }
 
+    private boolean[] branches_checked = new boolean[18];
+
     @Override
     protected <S extends ArtifactEntry> S cascadeEntitySave(ArtifactEntry entity)
     {
@@ -240,6 +242,20 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
         return Arrays.asList(new Pair[] { Pair.with(storageId, repositoryId) });
     }
 
+    private String testHelp(String test, int branchN){
+        branches_checked[branchN] = true;
+        return test;
+    }
+
+    public void printResultCoverage(){
+        for(int i = 0; i < branches_checked.length; i++){
+            System.out.print("Branch ");
+            System.out.print(i);
+            System.out.print(" = ");
+            System.out.println(branches_checked[i]);
+        }
+    }
+
     protected String buildCoordinatesQuery(Collection<Pair<String, String>> storageRepositoryPairList,
                                            Set<String> parameterNameSet,
                                            Set<String> tagNameSet,
@@ -255,20 +271,20 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
         // COORDINATES
         StringBuffer c1 = new StringBuffer();
         parameterNameSet.stream()
-                        .forEach(e -> c1.append(c1.length() > 0 ? " AND " : "")
+                        .forEach(e -> c1.append(c1.length() > 0 ? testHelp(" AND ", 0) : testHelp("", 1))
                                         .append("artifactCoordinates.coordinates.")
                                         .append(e)
                                         .append(".toLowerCase()")
-                                        .append(strict ? " = " : " like ")
+                                        .append(strict ? testHelp(" = ", 2) : testHelp(" like ", 3))
                                         .append(String.format(":%s", e)));
-        sb.append(" WHERE ").append(c1.length() > 0 ? c1.append(" AND ").toString() : " true = true AND ");
+        sb.append(" WHERE ").append(c1.length() > 0 ? testHelp(c1.append(" AND ").toString(), 4) : testHelp(" true = true AND ", 5));
 
         //REPOSITORIES
         StringBuffer c2 = new StringBuffer();
         IntStream.range(0, storageRepositoryPairList.size())
-                 .forEach(idx -> c2.append(idx > 0 ? " OR " : "")
+                 .forEach(idx -> c2.append(idx > 0 ? testHelp(" OR ", 6) : testHelp("", 7))
                                    .append(calculateStorageAndRepositoryCondition(storageRepositoryPairArray[idx], idx)));
-        sb.append(c2.length() > 0 ? c2.toString() : "true");
+        sb.append(c2.length() > 0 ? testHelp(c2.toString(), 8) : testHelp("true", 9));
 
         //TAGS
         tagNameSet.stream().forEach(t -> sb.append(String.format(" AND tagSet contains (name = :%s)", t)));
@@ -276,21 +292,31 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
         //ORDER
         if ("uuid".equals(orderBy))
         {
+            branches_checked[10] = true;
             sb.append(" ORDER BY artifactCoordinates.uuid");
         }
         else if (orderBy != null && !orderBy.trim().isEmpty())
         {
+            branches_checked[11] = true;
             sb.append(String.format(" ORDER BY artifactCoordinates.coordinates.%s", orderBy));
+        } else {
+            branches_checked[12] = true;
         }
 
         //PAGE
         if (skip > 0)
         {
+            branches_checked[13] = true;
             sb.append(String.format(" SKIP %s", skip));
+        } else {
+            branches_checked[14] = true;
         }
         if (limit > 0)
         {
+            branches_checked[15] = true;
             sb.append(String.format(" LIMIT %s", limit));
+        } else {
+            branches_checked[16] = true;
         }
 
         // now query should looks like
@@ -298,6 +324,7 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
 
         logger.debug("Executing SQL query> {}", sb);
 
+        branches_checked[17] = true;
         return sb.toString();
     }
 

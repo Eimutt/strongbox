@@ -77,4 +77,6 @@ public interface ArtifactEntryService
                                   String repositoryId,
                                   String path);
 
+    void printResultCoverage();
+
 }
