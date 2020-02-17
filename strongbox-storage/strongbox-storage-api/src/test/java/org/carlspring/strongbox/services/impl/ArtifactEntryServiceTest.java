@@ -80,13 +80,6 @@ public class ArtifactEntryServiceTest
         displayAllEntries(groupId);
     }
 
-    /*
-    @AfterAll
-    static void printResultCoverage(){
-        artifactEntryService.printResultCoverage();
-    }
-    */
-
     private String getGroupId(String groupId,
                               TestInfo testInfo)
     {

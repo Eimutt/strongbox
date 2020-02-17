@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.PrintWriter;
+import java.io.File;
+
 /**
  * DAO implementation for {@link ArtifactEntry} entities.
  *
@@ -247,13 +250,29 @@ class ArtifactEntryServiceImpl extends AbstractArtifactEntryService
         return test;
     }
 
-    public void printResultCoverage(){
-        for(int i = 0; i < branches_checked.length; i++){
-            System.out.print("Branch ");
-            System.out.print(i);
-            System.out.print(" = ");
-            System.out.println(branches_checked[i]);
+    public void printResultCoverage() {
+
+        try {
+            PrintWriter out = new PrintWriter("buildCoordinatesQueryResults.txt");
+            int succesful = 0;
+            for(int i = 0; i < branches_checked.length; i++){
+                out.print("Branch ");
+                out.print(i);
+                out.print(" = ");
+                out.println(branches_checked[i]);
+                if(branches_checked[i]){
+                    succesful++;
+                }
+            }
+            out.print("Branches tested: ");
+            out.print(succesful);
+            out.print(" / ");
+            out.println(branches_checked.length);
+            out.close();
+        } catch (Exception e){
+            System.out.println(e.toString());
         }
+        
     }
 
     protected String buildCoordinatesQuery(Collection<Pair<String, String>> storageRepositoryPairList,

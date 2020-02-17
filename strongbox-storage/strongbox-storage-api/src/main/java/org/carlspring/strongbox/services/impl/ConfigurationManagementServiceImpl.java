@@ -33,6 +33,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+
+import java.io.PrintWriter;
+import java.io.File;
+
 /**
  * @author mtodorov
  */
@@ -59,7 +63,7 @@ public class ConfigurationManagementServiceImpl
     private PlatformTransactionManager transactionManager;
 
 
-    private boolean[] branches_checked = new boolean[18];
+    private boolean[] branches_checked = new boolean[8];
 
     /**
      * Yes, this is a state object.
@@ -422,12 +426,29 @@ public class ConfigurationManagementServiceImpl
 
     @Override
     public void printResultCoverage(){
-        for(int i = 0; i < branches_checked.length; i++){
-            System.out.print("Branch ");
-            System.out.print(i);
-            System.out.print(" = ");
-            System.out.println(branches_checked[i]);
+
+        try{
+            PrintWriter out = new PrintWriter("setValidatorsResults.txt");
+            System.out.println("File created");
+            int succesful = 0;
+            for(int i = 0; i < branches_checked.length; i++){
+                out.print("Branch ");
+                out.print(i);
+                out.print(" = ");
+                out.println(branches_checked[i]);
+                if(branches_checked[i]){
+                    succesful++;
+                }
+            }
+            out.print("Branches tested: ");
+            out.print(succesful);
+            out.print(" / ");
+            out.println(branches_checked.length);
+            out.close();
+        } catch (Exception e){
+            System.out.println(e.toString());
         }
+        
     }
 
     @Override

@@ -66,8 +66,6 @@ public class ConfigurationManagementServiceImplTest
     @AfterEach
     public void cleanup()
     {
-        
-        System.out.println("TEST DONE LOWLWEO");
         configurationManagementService.printResultCoverage();
     }
 

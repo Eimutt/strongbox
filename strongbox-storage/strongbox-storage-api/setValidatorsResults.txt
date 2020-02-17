@@ -1,0 +1,9 @@
+Branch 0 = true
+Branch 1 = false
+Branch 2 = true
+Branch 3 = false
+Branch 4 = false
+Branch 5 = true
+Branch 6 = false
+Branch 7 = false
+Branches tested: 3 / 8

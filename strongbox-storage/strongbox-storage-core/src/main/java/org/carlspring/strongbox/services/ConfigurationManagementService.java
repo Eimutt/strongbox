@@ -96,4 +96,5 @@ public interface ConfigurationManagementService
 
     void setSmtpSettings(MutableSmtpConfiguration smtpConfiguration) throws IOException;
 
+    void printResultCoverage();
 }
