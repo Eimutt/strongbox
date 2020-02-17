@@ -2,10 +2,10 @@
 ---------------------------- OUTPUT COVERAGE ----------------------------
 ----------------------------      PYPI       ----------------------------
 Branch 0 -> true
-Branch 1 -> false
+Branch 1 -> true
 Branch 2 -> true
 Branch 3 -> true
 Branch 4 -> true
 Branch 5 -> true
 Branch 6 -> true
-Branch 7 -> false
+Branch 7 -> true

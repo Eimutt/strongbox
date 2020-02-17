@@ -385,7 +385,6 @@ public class SemanticVersion
             {
                 return false;
             }
-
             return true;
         }
     }
@@ -613,6 +612,7 @@ public class SemanticVersion
     public int compareTo(final SemanticVersion other)
     {
         setBranch(0);
+
         if (equals(other))
         {
             setBranch(1);
@@ -635,6 +635,7 @@ public class SemanticVersion
             else if (this.minor == other.minor)
             {
                 setBranch(5);
+
                 if (this.patch < other.patch)
                 {
                     setBranch(6);
@@ -643,9 +644,11 @@ public class SemanticVersion
                 else if (this.patch == other.patch)
                 {
                     setBranch(7);
+
                     if (this.special != null && other.special != null)
                     {
                         setBranch(8);
+
                         return this.special.compareTo(other.special);
                     }
                     else if (other.special != null)
@@ -659,6 +662,7 @@ public class SemanticVersion
                         return -1;
                     }
                     setBranch(11);
+
                     // else handled by previous equals check
                 }
             }

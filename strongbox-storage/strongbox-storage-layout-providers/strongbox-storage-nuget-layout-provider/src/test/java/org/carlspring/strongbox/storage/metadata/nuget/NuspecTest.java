@@ -83,6 +83,8 @@ public class NuspecTest
         return (String) expr.evaluate(doc, XPathConstants.STRING);
     }
 
+
+
     /**
      * Test parsing file specifications from XML
      *
@@ -106,6 +108,44 @@ public class NuspecTest
         SemanticVersion.outputCoverage();
     }
 
+   // public SemanticVersion(@Nonnegative final int major,
+	 //  	                           @Nonnegative final int minor,
+	 //  	                           @Nonnegative final int patch,
+	 //  	                           @Nullable final String separator,
+	 //  	                           @Nullable final String special)
+    @Test
+    public void branch7_8(){
+      //this.major == that.major
+      //this.minor == that.minor
+      //this.patch == that.patch
+      // special `= null
+      SemanticVersion a = new SemanticVersion(1,1,1,null,"a");
+      SemanticVersion b = new SemanticVersion(1,1,1,"a","b");
+      assertThat(a.compareTo(b)).isEqualTo(-1);
+    }
+    @Test
+    public void branch9(){
+      //this.major == that.major
+      //this.minor == that.minor
+      //this.patch == that.patch
+      // this.special `= null
+      // that.special != null
+      SemanticVersion a = new SemanticVersion(1,1,1,null,null);
+      SemanticVersion b = new SemanticVersion(1,1,1,"a","b");
+      assertThat(a.compareTo(b)).isEqualTo(1);
+    }
+
+    @Test
+    public void branch10(){
+      //this.major == that.major
+      //this.minor == that.minor
+      //this.patch == that.patch
+      // this.special `= null
+      // that.special != null
+      SemanticVersion a = new SemanticVersion(1,1,1,null,"a");
+      SemanticVersion b = new SemanticVersion(1,1,1,null,null);
+      assertThat(a.compareTo(b)).isEqualTo(-1);
+    }
     /**
      * Parsing specification file from XML if file references are provided
      *

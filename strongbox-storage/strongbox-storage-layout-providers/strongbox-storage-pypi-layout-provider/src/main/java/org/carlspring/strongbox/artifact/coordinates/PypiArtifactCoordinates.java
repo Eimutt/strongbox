@@ -148,6 +148,7 @@ public class PypiArtifactCoordinates
             if (!StringUtils.isBlank(build) && !Character.isDigit(build.charAt(0)))
             {
                 setBranch(7);
+                System.err.println("\n\n---------------------- E R R O R -----------------------\n\n");
                 throw new IllegalArgumentException("Illegal build tag!");
             }
         }

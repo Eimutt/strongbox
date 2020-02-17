@@ -257,6 +257,25 @@ public class PypiArtifactCoordinatesTest
 
         assertThat(coordsParsed.toString()).isEqualTo(expectedPackagePath);
     }
+    //new PypiArtifactCoordinates(String distribution,
+                           // String version,
+                           // String build,
+                           // String languageImplementationVersion,
+                           // String abi,
+                           // String platform,
+                           // String packaging
+    @Test
+    public void branch1(){
+      assertThatExceptionOfType(IllegalArgumentException.class)
+              .isThrownBy(() -> new PypiArtifactCoordinates("", "3.1.6", "", "cp37", "cp37m", "win_amd64", null));
+    }
+
+    @Test
+    public void branch7(){
+      assertThatExceptionOfType(IllegalArgumentException.class)
+              .isThrownBy(() -> new PypiArtifactCoordinates("distribution", "1.0", "a", "py27", "none", "any", "whl"));
+    }
+
 
     @AfterAll
     public static void getCoverage(){
