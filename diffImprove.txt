@@ -1,0 +1,3662 @@
+diff --git a/strongbox-storage/CoveragePypi.txt b/strongbox-storage/CoveragePypi.txt
+index 6b2cb2a5a..ecd8da033 100644
+--- a/strongbox-storage/CoveragePypi.txt
++++ b/strongbox-storage/CoveragePypi.txt
+@@ -2,10 +2,10 @@
+ ---------------------------- OUTPUT COVERAGE ----------------------------
+ ----------------------------      PYPI       ----------------------------
+ Branch 0 -> true
+-Branch 1 -> false
++Branch 1 -> true
+ Branch 2 -> true
+ Branch 3 -> true
+ Branch 4 -> true
+ Branch 5 -> true
+ Branch 6 -> true
+-Branch 7 -> false
++Branch 7 -> true
+diff --git a/strongbox-storage/CoverageSemantic.txt b/strongbox-storage/CoverageSemantic.txt
+index 4018a64a1..625fc16f5 100644
+--- a/strongbox-storage/CoverageSemantic.txt
++++ b/strongbox-storage/CoverageSemantic.txt
+@@ -8,8 +8,8 @@ Branch 3 -> true
+ Branch 4 -> true
+ Branch 5 -> true
+ Branch 6 -> true
+-Branch 7 -> false
+-Branch 8 -> false
+-Branch 9 -> false
+-Branch 10 -> false
++Branch 7 -> true
++Branch 8 -> true
++Branch 9 -> true
++Branch 10 -> true
+ Branch 11 -> false
+diff --git a/strongbox-storage/strongbox-storage-api/src/main/java/org/carlspring/strongbox/artifact/coordinates/versioning/SemanticVersion.java b/strongbox-storage/strongbox-storage-api/src/main/java/org/carlspring/strongbox/artifact/coordinates/versioning/SemanticVersion.java
+index 1ef47f6da..0bb85cdd9 100644
+--- a/strongbox-storage/strongbox-storage-api/src/main/java/org/carlspring/strongbox/artifact/coordinates/versioning/SemanticVersion.java
++++ b/strongbox-storage/strongbox-storage-api/src/main/java/org/carlspring/strongbox/artifact/coordinates/versioning/SemanticVersion.java
+@@ -385,7 +385,6 @@ public class SemanticVersion
+             {
+                 return false;
+             }
+-
+             return true;
+         }
+     }
+@@ -613,6 +612,7 @@ public class SemanticVersion
+     public int compareTo(final SemanticVersion other)
+     {
+         setBranch(0);
++
+         if (equals(other))
+         {
+             setBranch(1);
+@@ -635,6 +635,7 @@ public class SemanticVersion
+             else if (this.minor == other.minor)
+             {
+                 setBranch(5);
++
+                 if (this.patch < other.patch)
+                 {
+                     setBranch(6);
+@@ -643,9 +644,11 @@ public class SemanticVersion
+                 else if (this.patch == other.patch)
+                 {
+                     setBranch(7);
++
+                     if (this.special != null && other.special != null)
+                     {
+                         setBranch(8);
++
+                         return this.special.compareTo(other.special);
+                     }
+                     else if (other.special != null)
+@@ -659,6 +662,7 @@ public class SemanticVersion
+                         return -1;
+                     }
+                     setBranch(11);
++
+                     // else handled by previous equals check
+                 }
+             }
+diff --git a/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-nuget-layout-provider/src/test/java/org/carlspring/strongbox/storage/metadata/nuget/NuspecTest.java b/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-nuget-layout-provider/src/test/java/org/carlspring/strongbox/storage/metadata/nuget/NuspecTest.java
+index b16048132..130da2a7e 100644
+--- a/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-nuget-layout-provider/src/test/java/org/carlspring/strongbox/storage/metadata/nuget/NuspecTest.java
++++ b/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-nuget-layout-provider/src/test/java/org/carlspring/strongbox/storage/metadata/nuget/NuspecTest.java
+@@ -83,6 +83,8 @@ public class NuspecTest
+         return (String) expr.evaluate(doc, XPathConstants.STRING);
+     }
+ 
++
++
+     /**
+      * Test parsing file specifications from XML
+      *
+@@ -106,6 +108,44 @@ public class NuspecTest
+         SemanticVersion.outputCoverage();
+     }
+ 
++   // public SemanticVersion(@Nonnegative final int major,
++	 //  	                           @Nonnegative final int minor,
++	 //  	                           @Nonnegative final int patch,
++	 //  	                           @Nullable final String separator,
++	 //  	                           @Nullable final String special)
++    @Test
++    public void branch7_8(){
++      //this.major == that.major
++      //this.minor == that.minor
++      //this.patch == that.patch
++      // special `= null
++      SemanticVersion a = new SemanticVersion(1,1,1,null,"a");
++      SemanticVersion b = new SemanticVersion(1,1,1,"a","b");
++      assertThat(a.compareTo(b)).isEqualTo(-1);
++    }
++    @Test
++    public void branch9(){
++      //this.major == that.major
++      //this.minor == that.minor
++      //this.patch == that.patch
++      // this.special `= null
++      // that.special != null
++      SemanticVersion a = new SemanticVersion(1,1,1,null,null);
++      SemanticVersion b = new SemanticVersion(1,1,1,"a","b");
++      assertThat(a.compareTo(b)).isEqualTo(1);
++    }
++
++    @Test
++    public void branch10(){
++      //this.major == that.major
++      //this.minor == that.minor
++      //this.patch == that.patch
++      // this.special `= null
++      // that.special != null
++      SemanticVersion a = new SemanticVersion(1,1,1,null,"a");
++      SemanticVersion b = new SemanticVersion(1,1,1,null,null);
++      assertThat(a.compareTo(b)).isEqualTo(-1);
++    }
+     /**
+      * Parsing specification file from XML if file references are provided
+      *
+diff --git a/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/main/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinates.java b/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/main/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinates.java
+index 0c204dacf..64240058f 100644
+--- a/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/main/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinates.java
++++ b/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/main/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinates.java
+@@ -148,6 +148,7 @@ public class PypiArtifactCoordinates
+             if (!StringUtils.isBlank(build) && !Character.isDigit(build.charAt(0)))
+             {
+                 setBranch(7);
++                System.err.println("\n\n---------------------- E R R O R -----------------------\n\n");
+                 throw new IllegalArgumentException("Illegal build tag!");
+             }
+         }
+diff --git a/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/test/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinatesTest.java b/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/test/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinatesTest.java
+index 1d7ab5c6f..4506ca979 100644
+--- a/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/test/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinatesTest.java
++++ b/strongbox-storage/strongbox-storage-layout-providers/strongbox-storage-pypi-layout-provider/src/test/java/org/carlspring/strongbox/artifact/coordinates/PypiArtifactCoordinatesTest.java
+@@ -257,6 +257,25 @@ public class PypiArtifactCoordinatesTest
+ 
+         assertThat(coordsParsed.toString()).isEqualTo(expectedPackagePath);
+     }
++    //new PypiArtifactCoordinates(String distribution,
++                           // String version,
++                           // String build,
++                           // String languageImplementationVersion,
++                           // String abi,
++                           // String platform,
++                           // String packaging
++    @Test
++    public void branch1(){
++      assertThatExceptionOfType(IllegalArgumentException.class)
++              .isThrownBy(() -> new PypiArtifactCoordinates("", "3.1.6", "", "cp37", "cp37m", "win_amd64", null));
++    }
++
++    @Test
++    public void branch7(){
++      assertThatExceptionOfType(IllegalArgumentException.class)
++              .isThrownBy(() -> new PypiArtifactCoordinates("distribution", "1.0", "a", "py27", "none", "any", "whl"));
++    }
++
+ 
+     @AfterAll
+     public static void getCoverage(){
+diff --git a/strongbox-storage/target/site/clover/agg-pkgs.html b/strongbox-storage/target/site/clover/agg-pkgs.html
+new file mode 100644
+index 000000000..9667dccd5
+--- /dev/null
++++ b/strongbox-storage/target/site/clover/agg-pkgs.html
+@@ -0,0 +1,3473 @@
++<!DOCTYPE html>
++<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
++<head>
++    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
++
++    
++    
++    <link rel="SHORTCUT ICON" href="img/clover.ico" />
++
++    <link rel="stylesheet" href="aui/css/aui.min.css" media="all"/>
++    <link rel="stylesheet" href="aui/css/aui-experimental.min.css" media="all"/>
++    <!--[if IE 9]><link rel="stylesheet" href="aui/css/aui-ie9.min.css" media="all"/><![endif]-->
++
++    <style type="text/css" media="all">
++        @import url('style.css');
++        @import url('tree.css');
++        
++    </style>
++
++    <script src="jquery-1.8.3.min.js" type="text/javascript"></script>
++    <script src="aui/js/aui.min.js" type="text/javascript"></script>
++    <script src="aui/js/aui-experimental.min.js" type="text/javascript"></script>
++    <script src="aui/js/aui-soy.min.js" type="text/javascript"></script>
++
++    <script src="package-nodes-tree.js" type="text/javascript"></script>
++    <script src="clover-tree.js" type="text/javascript"></script>
++    <script src="clover.js" type="text/javascript"></script>
++    <script src="clover-descriptions.js" type="text/javascript"></script>
++    <script src="cloud.js" type="text/javascript"></script>
++
++            <title>Strongbox: Storage 1.0-SNAPSHOT (Aggregated)</title>
++    </head>
++
++<body  >
++    <div id="page">
++        
++        
++
++
++<header id="header" role="banner">
++    <nav class="aui-header aui-dropdown2-trigger-group" role="navigation">
++        <div class="aui-header-inner">
++            <div class="aui-header-primary">
++                <h1 id="logo" class="aui-header-logo aui-header-logo-clover">
++                    <a href="http://openclover.org" title="Visit OpenClover home page"><span class="aui-header-logo-device">OpenClover</span></a>
++                </h1>
++                            </div>
++            <div class="aui-header-secondary">
++                <ul class="aui-nav">
++                    <li id="system-help-menu">
++                        <a class="aui-nav-link" title="Open online documentation" target="_blank"
++                           href="http://openclover.org/documentation">
++                            <span class="aui-icon aui-icon-small aui-iconfont-help">&#160;Help</span>
++                        </a>
++                    </li>
++                </ul>
++            </div>
++        </div>
++    </nav>
++</header>
++        
++        <div class="aui-page-panel">
++            <div class="aui-page-panel-inner">
++                <div class="aui-page-panel-nav aui-page-panel-nav-clover">
++                    
++
++<div class="aui-page-header-inner" style="margin-bottom: 20px;">
++    <div class="aui-page-header-image">
++                <div class="aui-avatar aui-avatar-large aui-avatar-project">
++            <div class="aui-avatar-inner">
++                                    <img src="img/clover_logo_large.png" alt="Clover icon"/>
++                            </div>
++        </div>
++            </div>
++    <div class="aui-page-header-main" >
++        <h1>
++                                        Strongbox: Storage 1.0-SNAPSHOT (Aggregated)
++                                </h1>
++    </div>
++</div>
++
++<nav class="aui-navgroup aui-navgroup-vertical">
++    <div class="aui-navgroup-inner">
++                                            <ul class="aui-nav">
++                <li class="aui-nav-selected">
++                    <a href="dashboard.html">Project overview</a>
++                </li>
++            </ul>
++        
++                <div class="aui-nav-heading packages-nav-heading">
++            <strong>Packages</strong>
++        </div>
++        <div class="aui-nav project-packages">
++            <form method="get" action="#" class="aui package-filter-container">
++                <input type="text" autocomplete="off" class="package-filter text"
++                       placeholder="Type to filter packages..." name="package-filter" id="package-filter"
++                       title="Start typing package name (or part of the name) to search through the tree. Use arrow keys and the Enter key to navigate."/>
++            </form>
++            <p class="package-filter-no-results-message hidden">
++                <small>No results found.</small>
++            </p>
++                                                  <div class="packages-tree-wrapper" data-root-relative="" data-package-name="">
++                <div class="packages-tree-container"></div>
++                <div class="clover-packages-lozenges"></div>
++            </div>
++        </div>
++        
++            </div>
++</nav>                </div>
++                <section class="aui-page-panel-content">
++                    <div class="aui-page-panel-content-clover">
++
++                    
++                    <ol class="aui-nav aui-nav-breadcrumbs">
++            
++        <li><a href="dashboard.html">Project Clover database Mon Feb 17 2020 21:48:18 CET</a></li>
++    </ol>
++    
++<h1 class="aui-h2-clover">
++            Project overview
++    </h1>
++<div class="aui-tabs horizontal-tabs">
++
++            <ul class="tabs-menu">
++            <li class="menu-item ">
++            <a href="dashboard.html">Dashboard</a>
++        </li>
++                <li class="menu-item active-tab">
++            <a href="pkg-summary.html"><strong>Application code</strong></a>
++        </li>
++                <li class="menu-item ">
++            <a href="testsrc-pkg-summary.html"><strong>Test code</strong></a>
++        </li>
++        <li class="menu-item ">
++            <a href="test-pkg-summary.html"><strong>Test results</strong></a>
++        </li>
++                <li class="menu-item ">
++            <a href="top-risks.html"><strong>Top risks</strong></a>
++        </li>
++        <li class="menu-item ">
++            <a href="quick-wins.html"><strong>Quick wins</strong></a>
++        </li>
++                                                <li class="menu-item ">
++                <a href="treemap.html"><strong>Coverage tree map</strong></a>
++            </li>
++            </ul>
++    <div class="tabs-pane active-pane" id="tabs-first">
++
++        <div>&#160;</div>
++
++            <div class="dashboard-widget">
++        <header class="dashboard-widget-header">
++            <h3>Code metrics</h3>
++        </header>
++        <div class="dashboard-widget-content">
++                        
++
++<div id="td-header-stats" class="aui-item" style="display: ">
++<div style="display: table">
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of branches in this project">Branches:</label></div>
++        <div class="stats-box-value">1.888</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of statements in this project">Statements:</label></div>
++        <div class="stats-box-value">7.472</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of methods in this project">Methods:</label></div>
++        <div class="stats-box-value">2.652</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of classes in this project">Classes:</label></div>
++        <div class="stats-box-value">479</div>
++    </div>
++            <div class="stats-box">
++            <div class="stats-box-label"><label title="Total number of files in this project">Files:</label></div>
++            <div class="stats-box-value">436</div>
++        </div>
++                <div class="stats-box">
++            <div class="stats-box-label"><label title="Total number of packages in this project">Packages:</label></div>
++            <div class="stats-box-value">69</div>
++        </div>
++        <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of lines of code in this project">LOC:</label></div>
++        <div class="stats-box-value">41.169</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of non-comment lines of code in this project">NCLOC:</label></div>
++        <div class="stats-box-value">29.678</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Cyclomatic complexity is the number of paths in this project">Total complexity:</label></div>
++        <div class="stats-box-value">4.036</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label">
++            <label title="Complexity density is the complexity divided by the number of statements in this project">Complexity density:</label>
++        </div>
++        <div class="stats-box-value">0,54</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Number of statements per method.">Statements/Method:</label></div>
++        <div class="stats-box-value">2,82</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Number of methods per class.">Methods/Class:</label></div>
++        <div class="stats-box-value">5,54</div>
++    </div>
++            <div class="stats-box">
++            <div class="stats-box-label"><label title="Number of classes per package.">Classes/Package:</label></div>
++            <div class="stats-box-value">6,94</div>
++        </div>
++        <div class="stats-box">
++        <div class="stats-box-label"><label title="Complexity divided by the number of methods in this project">Average method complexity:</label></div>
++        <div class="stats-box-value">1,52</div>
++    </div>
++</div>
++
++</div>
++                        
++
++<div id="td-filtered-header-stats" class="aui-item" style="display: none">
++<div style="display: table">
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of branches in this project">Branches:</label></div>
++        <div class="stats-box-value">1.888</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of statements in this project">Statements:</label></div>
++        <div class="stats-box-value">7.472</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of methods in this project">Methods:</label></div>
++        <div class="stats-box-value">2.652</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of classes in this project">Classes:</label></div>
++        <div class="stats-box-value">479</div>
++    </div>
++            <div class="stats-box">
++            <div class="stats-box-label"><label title="Total number of files in this project">Files:</label></div>
++            <div class="stats-box-value">436</div>
++        </div>
++                <div class="stats-box">
++            <div class="stats-box-label"><label title="Total number of packages in this project">Packages:</label></div>
++            <div class="stats-box-value">69</div>
++        </div>
++        <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of lines of code in this project">LOC:</label></div>
++        <div class="stats-box-value">41.169</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Total number of non-comment lines of code in this project">NCLOC:</label></div>
++        <div class="stats-box-value">29.678</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Cyclomatic complexity is the number of paths in this project">Total complexity:</label></div>
++        <div class="stats-box-value">4.036</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label">
++            <label title="Complexity density is the complexity divided by the number of statements in this project">Complexity density:</label>
++        </div>
++        <div class="stats-box-value">0,54</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Number of statements per method.">Statements/Method:</label></div>
++        <div class="stats-box-value">2,82</div>
++    </div>
++    <div class="stats-box">
++        <div class="stats-box-label"><label title="Number of methods per class.">Methods/Class:</label></div>
++        <div class="stats-box-value">5,54</div>
++    </div>
++            <div class="stats-box">
++            <div class="stats-box-label"><label title="Number of classes per package.">Classes/Package:</label></div>
++            <div class="stats-box-value">6,94</div>
++        </div>
++        <div class="stats-box">
++        <div class="stats-box-label"><label title="Complexity divided by the number of methods in this project">Average method complexity:</label></div>
++        <div class="stats-box-value">1,52</div>
++    </div>
++</div>
++
++</div>        </div>
++    </div>
++        
++
++
++        
++        <table id="projectSummaryTable" class="aui">
++                        <thead>
++    <tr>
++        <th width="30%">Project</th>
++                    <th colspan="1">
++                <label >Packages</label>
++            </th>
++                    <th colspan="1">
++                <label  title="The percentage of elements that have been filtered from this report.">% Filtered</label>
++            </th>
++                    <th colspan="1">
++                <label  title="The average number of paths per method.">Average Method Complexity</label>
++            </th>
++                    <th colspan="1">
++                <label  title="The number of statements and branches that were not covered during testing.">Uncovered Elements</label>
++            </th>
++                    <th colspan="2">
++                <label  title="The amount of code that was hit at least once during testing.">TOTAL Coverage</label>
++            </th>
++            </tr>
++</thead>
++            <tbody>
++                                <tr>
++    <td>
++                <span class="sortValue">Clover&#160;database&#160;Mon&#160;Feb&#160;17&#160;2020&#160;21:48:18&#160;CET</span>
++                    Clover&#160;database&#160;Mon&#160;Feb&#160;17&#160;2020&#160;21:48:18&#160;CET
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">69.0</span>
++            69
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5218703</span>
++            1,52
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4264.0</span>
++            4.264
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6450216</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6450216</span>64,5%</div><div style="display: table-cell">
++ <div title="64,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:64.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++            </tbody>
++        </table>
++
++        <div>&#160;</div>
++                <div>
++    Metrics from sub-packages:
++            <p class="aui-buttons">
++        <a href="pkg-summary.html"
++           class="aui-button"
++           id="simple-tooltip"
++           title="Calculate code metrics from sub-packages separately">
++            Separated
++        </a>
++        <a href="agg-pkgs.html"
++           class="aui-button active"
++           id="simple-tooltip"
++           title="Calculate a sum of metrics from a given package and all its sub-packages">
++            Aggregated
++        </a>
++    </p>
++</div>
++        
++        <table id="aggregatedPacakgesTable" class="aui aui-table-sortable">
++                        <thead>
++    <tr>
++        <th width="30%">Package (aggregated)</th>
++                            <th colspan="1">
++                <label >
++                    Packages
++                </label>
++            </th>
++                                <th colspan="1">
++                <label  title="The percentage of elements that have been filtered from this report.">
++                    % Filtered
++                </label>
++            </th>
++                                <th colspan="1">
++                <label  title="The average number of paths per method.">
++                    Average Method Complexity
++                </label>
++            </th>
++                                <th colspan="1">
++                <label  title="The number of statements and branches that were not covered during testing.">
++                    Uncovered Elements
++                </label>
++            </th>
++                                <th colspan="2">
++                <label  title="The amount of code that was hit at least once during testing.">
++                    TOTAL Coverage
++                </label>
++            </th>
++                        </tr>
++</thead>
++            <tbody>
++                <!-- render list of package coverage bargraphs -->
++                                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.npm</span>
++                    <a href="org/carlspring/strongbox/npm/pkg-summary.html" title="org.carlspring.strongbox.npm">org.carlspring.strongbox.npm</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">16.0</span>
++            16
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.0</span>0%</div><div style="display: table-cell">
++ <div title="0% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:0%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.layout.p2</span>
++                    <a href="org/carlspring/strongbox/providers/layout/p2/pkg-summary.html" title="org.carlspring.strongbox.providers.layout.p2">org.carlspring.strongbox.providers.layout.p2</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.35</span>
++            1,35
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">161.0</span>
++            161
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.0</span>0%</div><div style="display: table-cell">
++ <div title="0% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:0%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.pypi</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/pypi/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.pypi">org.carlspring.strongbox.storage.metadata.pypi</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">87.0</span>
++            87
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.0</span>0%</div><div style="display: table-cell">
++ <div title="0% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:0%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.search</span>
++                    <a href="org/carlspring/strongbox/providers/search/pkg-summary.html" title="org.carlspring.strongbox.providers.search">org.carlspring.strongbox.providers.search</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3636364</span>
++            1,36
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">55.0</span>
++            55
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.0</span>0%</div><div style="display: table-cell">
++ <div title="0% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:0%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.search</span>
++                    <a href="org/carlspring/strongbox/storage/search/pkg-summary.html" title="org.carlspring.strongbox.storage.search">org.carlspring.strongbox.storage.search</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">79.0</span>
++            79
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.0</span>0%</div><div style="display: table-cell">
++ <div title="0% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:0%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.cron</span>
++                    org.carlspring.strongbox.cron
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4827586</span>
++            1,48
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">130.0</span>
++            130
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.10958904</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.10958904</span>11%</div><div style="display: table-cell">
++ <div title="11% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:11%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.cron.jobs</span>
++                    <a href="org/carlspring/strongbox/cron/jobs/pkg-summary.html" title="org.carlspring.strongbox.cron.jobs">org.carlspring.strongbox.cron.jobs</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4827586</span>
++            1,48
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">130.0</span>
++            130
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.10958904</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.10958904</span>11%</div><div style="display: table-cell">
++ <div title="11% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:11%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact.criteria</span>
++                    <a href="org/carlspring/strongbox/artifact/criteria/pkg-summary.html" title="org.carlspring.strongbox.artifact.criteria">org.carlspring.strongbox.artifact.criteria</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">14.0</span>
++            14
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.125</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.125</span>12,5%</div><div style="display: table-cell">
++ <div title="12,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:12.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.repository.event</span>
++                    <a href="org/carlspring/strongbox/providers/repository/event/pkg-summary.html" title="org.carlspring.strongbox.providers.repository.event">org.carlspring.strongbox.providers.repository.event</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">22.0</span>
++            22
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.15384616</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.15384616</span>15,4%</div><div style="display: table-cell">
++ <div title="15,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:15.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.maven.versions</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/maven/versions/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.maven.versions">org.carlspring.strongbox.storage.metadata.maven.versions</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.4444444</span>
++            2,44
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">40.0</span>
++            40
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.27272728</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.27272728</span>27,3%</div><div style="display: table-cell">
++ <div title="27,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:27.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.deployment</span>
++                    <a href="org/carlspring/strongbox/storage/validation/deployment/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.deployment">org.carlspring.strongbox.storage.validation.deployment</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.75</span>
++            1,75
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">9.0</span>
++            9
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.35714287</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.35714287</span>35,7%</div><div style="display: table-cell">
++ <div title="35,7% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:35.7%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.yaml.configuration.repository.remote</span>
++                    <a href="org/carlspring/strongbox/yaml/configuration/repository/remote/pkg-summary.html" title="org.carlspring.strongbox.yaml.configuration.repository.remote">org.carlspring.strongbox.yaml.configuration.repository.remote</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">17.0</span>
++            17
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.43333334</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.43333334</span>43,3%</div><div style="display: table-cell">
++ <div title="43,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:43.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.repository</span>
++                    <a href="org/carlspring/strongbox/repository/pkg-summary.html" title="org.carlspring.strongbox.repository">org.carlspring.strongbox.repository</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.9302325</span>
++            1,93
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">391.0</span>
++            391
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.4516129</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.4516129</span>45,2%</div><div style="display: table-cell">
++ <div title="45,2% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:45.2%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.indexing.remote</span>
++                    <a href="org/carlspring/strongbox/storage/indexing/remote/pkg-summary.html" title="org.carlspring.strongbox.storage.indexing.remote">org.carlspring.strongbox.storage.indexing.remote</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3846154</span>
++            1,38
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">33.0</span>
++            33
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.484375</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.484375</span>48,4%</div><div style="display: table-cell">
++ <div title="48,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:48.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.event.artifact</span>
++                    <a href="org/carlspring/strongbox/event/artifact/pkg-summary.html" title="org.carlspring.strongbox.event.artifact">org.carlspring.strongbox.event.artifact</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.4444444</span>
++            2,44
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">38.0</span>
++            38
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.4864865</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.4864865</span>48,6%</div><div style="display: table-cell">
++ <div title="48,6% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:48.6%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.event</span>
++                    org.carlspring.strongbox.event
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.4444444</span>
++            2,44
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">38.0</span>
++            38
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.4864865</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.4864865</span>48,6%</div><div style="display: table-cell">
++ <div title="48,6% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:48.6%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.artifact.version</span>
++                    <a href="org/carlspring/strongbox/storage/validation/artifact/version/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.artifact.version">org.carlspring.strongbox.storage.validation.artifact.version</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4583334</span>
++            1,46
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">34.0</span>
++            34
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5072464</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5072464</span>50,7%</div><div style="display: table-cell">
++ <div title="50,7% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:50.7%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.io</span>
++                    <a href="org/carlspring/strongbox/io/pkg-summary.html" title="org.carlspring.strongbox.io">org.carlspring.strongbox.io</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1596639</span>
++            1,16
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">166.0</span>
++            166
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5088757</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5088757</span>50,9%</div><div style="display: table-cell">
++ <div title="50,9% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:50.9%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact.archive</span>
++                    <a href="org/carlspring/strongbox/artifact/archive/pkg-summary.html" title="org.carlspring.strongbox.artifact.archive">org.carlspring.strongbox.artifact.archive</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">3.3125</span>
++            3,31
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">37.0</span>
++            37
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5194805</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5194805</span>51,9%</div><div style="display: table-cell">
++ <div title="51,9% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:51.9%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.artifact</span>
++                    <a href="org/carlspring/strongbox/storage/validation/artifact/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.artifact">org.carlspring.strongbox.storage.validation.artifact</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3243244</span>
++            1,32
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">48.0</span>
++            48
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5247525</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5247525</span>52,5%</div><div style="display: table-cell">
++ <div title="52,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:52.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.layout</span>
++                    <a href="org/carlspring/strongbox/providers/layout/pkg-summary.html" title="org.carlspring.strongbox.providers.layout">org.carlspring.strongbox.providers.layout</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.7564102</span>
++            1,76
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">408.0</span>
++            408
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5283237</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5283237</span>52,8%</div><div style="display: table-cell">
++ <div title="52,8% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:52.8%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.artifactid</span>
++                    <a href="org/carlspring/strongbox/storage/validation/artifactid/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.artifactid">org.carlspring.strongbox.storage.validation.artifactid</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.2</span>
++            1,2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">7.0</span>
++            7
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.53333336</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.53333336</span>53,3%</div><div style="display: table-cell">
++ <div title="53,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:53.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.groupid</span>
++                    <a href="org/carlspring/strongbox/storage/validation/groupid/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.groupid">org.carlspring.strongbox.storage.validation.groupid</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.2</span>
++            1,2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">7.0</span>
++            7
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.53333336</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.53333336</span>53,3%</div><div style="display: table-cell">
++ <div title="53,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:53.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact</span>
++                    <a href="org/carlspring/strongbox/artifact/pkg-summary.html" title="org.carlspring.strongbox.artifact">org.carlspring.strongbox.artifact</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">7.0</span>
++            7
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.7308868</span>
++            1,73
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">704.0</span>
++            704
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5541482</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5541482</span>55,4%</div><div style="display: table-cell">
++ <div title="55,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:55.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact.coordinates</span>
++                    <a href="org/carlspring/strongbox/artifact/coordinates/pkg-summary.html" title="org.carlspring.strongbox.artifact.coordinates">org.carlspring.strongbox.artifact.coordinates</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.7242991</span>
++            1,72
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">492.0</span>
++            492
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.5618878</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.5618878</span>56,2%</div><div style="display: table-cell">
++ <div title="56,2% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:56.2%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.yaml.configuration</span>
++                    org.carlspring.strongbox.yaml.configuration
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">40.0</span>
++            40
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.56989247</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.56989247</span>57%</div><div style="display: table-cell">
++ <div title="57% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:57%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.yaml.configuration.repository</span>
++                    <a href="org/carlspring/strongbox/yaml/configuration/repository/pkg-summary.html" title="org.carlspring.strongbox.yaml.configuration.repository">org.carlspring.strongbox.yaml.configuration.repository</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">40.0</span>
++            40
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.56989247</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.56989247</span>57%</div><div style="display: table-cell">
++ <div title="57% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:57%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.yaml</span>
++                    org.carlspring.strongbox.yaml
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">40.0</span>
++            40
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.56989247</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.56989247</span>57%</div><div style="display: table-cell">
++ <div title="57% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:57%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.maven</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/maven/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.maven">org.carlspring.strongbox.storage.metadata.maven</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">5.0</span>
++            5
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.0333333</span>
++            2,03
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">71.0</span>
++            71
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.57228917</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.57228917</span>57,2%</div><div style="display: table-cell">
++ <div title="57,2% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:57.2%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.maven.visitors</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/maven/visitors/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.maven.visitors">org.carlspring.strongbox.storage.metadata.maven.visitors</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.6666666</span>
++            1,67
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">11.0</span>
++            11
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.60714287</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.60714287</span>60,7%</div><div style="display: table-cell">
++ <div title="60,7% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:60.7%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.repository.proxied</span>
++                    <a href="org/carlspring/strongbox/providers/repository/proxied/pkg-summary.html" title="org.carlspring.strongbox.providers.repository.proxied">org.carlspring.strongbox.providers.repository.proxied</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.6666666</span>
++            1,67
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">115.0</span>
++            115
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.60884356</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.60884356</span>60,9%</div><div style="display: table-cell">
++ <div title="60,9% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:60.9%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact.coordinates.versioning</span>
++                    <a href="org/carlspring/strongbox/artifact/coordinates/versioning/pkg-summary.html" title="org.carlspring.strongbox.artifact.coordinates.versioning">org.carlspring.strongbox.artifact.coordinates.versioning</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.625</span>
++            2,62
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">138.0</span>
++            138
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6112676</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6112676</span>61,1%</div><div style="display: table-cell">
++ <div title="61,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:61.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.configuration</span>
++                    <a href="org/carlspring/strongbox/configuration/pkg-summary.html" title="org.carlspring.strongbox.configuration">org.carlspring.strongbox.configuration</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1656442</span>
++            1,17
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">161.0</span>
++            161
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.63656884</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.63656884</span>63,7%</div><div style="display: table-cell">
++ <div title="63,7% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:63.7%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation</span>
++                    <a href="org/carlspring/strongbox/storage/validation/pkg-summary.html" title="org.carlspring.strongbox.storage.validation">org.carlspring.strongbox.storage.validation</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">8.0</span>
++            8
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5316455</span>
++            1,53
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">93.0</span>
++            93
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.64092666</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.64092666</span>64,1%</div><div style="display: table-cell">
++ <div title="64,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:64.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers</span>
++                    <a href="org/carlspring/strongbox/providers/pkg-summary.html" title="org.carlspring.strongbox.providers">org.carlspring.strongbox.providers</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">10.0</span>
++            10
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5687382</span>
++            1,57
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">935.0</span>
++            935
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6425841</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6425841</span>64,3%</div><div style="display: table-cell">
++ <div title="64,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:64.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring</span>
++                    org.carlspring
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">69.0</span>
++            69
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5218703</span>
++            1,52
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4264.0</span>
++            4.264
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6450216</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6450216</span>64,5%</div><div style="display: table-cell">
++ <div title="64,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:64.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org</span>
++                    org
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">69.0</span>
++            69
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5218703</span>
++            1,52
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4264.0</span>
++            4.264
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6450216</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6450216</span>64,5%</div><div style="display: table-cell">
++ <div title="64,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:64.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox</span>
++                    org.carlspring.strongbox
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">69.0</span>
++            69
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5218703</span>
++            1,52
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4264.0</span>
++            4.264
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6450216</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6450216</span>64,5%</div><div style="display: table-cell">
++ <div title="64,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:64.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.domain</span>
++                    <a href="org/carlspring/strongbox/domain/pkg-summary.html" title="org.carlspring.strongbox.domain">org.carlspring.strongbox.domain</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1058824</span>
++            1,11
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">75.0</span>
++            75
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.65753424</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.65753424</span>65,8%</div><div style="display: table-cell">
++ <div title="65,8% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:65.8%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.locator.handlers</span>
++                    <a href="org/carlspring/strongbox/locator/handlers/pkg-summary.html" title="org.carlspring.strongbox.locator.handlers">org.carlspring.strongbox.locator.handlers</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.8461537</span>
++            2,85
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">36.0</span>
++            36
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6814159</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6814159</span>68,1%</div><div style="display: table-cell">
++ <div title="68,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:68.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.locator</span>
++                    org.carlspring.strongbox.locator
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.8461537</span>
++            2,85
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">36.0</span>
++            36
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6814159</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6814159</span>68,1%</div><div style="display: table-cell">
++ <div title="68,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:68.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.nuget.rss</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/nuget/rss/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.nuget.rss">org.carlspring.strongbox.storage.metadata.nuget.rss</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3670886</span>
++            1,37
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">203.0</span>
++            203
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.68960243</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.68960243</span>69%</div><div style="display: table-cell">
++ <div title="69% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:69%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.nuget</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/nuget/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.nuget">org.carlspring.strongbox.storage.metadata.nuget</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5215946</span>
++            1,52
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">416.0</span>
++            416
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.6943424</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.6943424</span>69,4%</div><div style="display: table-cell">
++ <div title="69,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:69.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.services.impl</span>
++                    <a href="org/carlspring/strongbox/services/impl/pkg-summary.html" title="org.carlspring.strongbox.services.impl">org.carlspring.strongbox.services.impl</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">260.0</span>
++            260
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.69590646</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.69590646</span>69,6%</div><div style="display: table-cell">
++ <div title="69,6% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:69.6%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata">org.carlspring.strongbox.storage.metadata</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">9.0</span>
++            9
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.7181818</span>
++            1,72
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">709.0</span>
++            709
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.696879</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.696879</span>69,7%</div><div style="display: table-cell">
++ <div title="69,7% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:69.7%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage</span>
++                    <a href="org/carlspring/strongbox/storage/pkg-summary.html" title="org.carlspring.strongbox.storage">org.carlspring.strongbox.storage</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">29.0</span>
++            29
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4639498</span>
++            1,46
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1187.0</span>
++            1.187
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7009322</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7009322</span>70,1%</div><div style="display: table-cell">
++ <div title="70,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:70.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.repository</span>
++                    <a href="org/carlspring/strongbox/providers/repository/pkg-summary.html" title="org.carlspring.strongbox.providers.repository">org.carlspring.strongbox.providers.repository</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">4.0</span>
++            4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.6086956</span>
++            1,61
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">185.0</span>
++            185
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7063492</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7063492</span>70,6%</div><div style="display: table-cell">
++ <div title="70,6% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:70.6%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact.locator.handlers</span>
++                    <a href="org/carlspring/strongbox/artifact/locator/handlers/pkg-summary.html" title="org.carlspring.strongbox.artifact.locator.handlers">org.carlspring.strongbox.artifact.locator.handlers</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.909091</span>
++            2,91
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">27.0</span>
++            27
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7096774</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7096774</span>71%</div><div style="display: table-cell">
++ <div title="71% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:71%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.maven.io.filters</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/maven/io/filters/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.maven.io.filters">org.carlspring.strongbox.storage.metadata.maven.io.filters</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.75</span>
++            1,75
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4.0</span>
++            4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.71428573</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.71428573</span>71,4%</div><div style="display: table-cell">
++ <div title="71,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:71.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.maven.io</span>
++                    org.carlspring.strongbox.storage.metadata.maven.io
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.75</span>
++            1,75
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4.0</span>
++            4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.71428573</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.71428573</span>71,4%</div><div style="display: table-cell">
++ <div title="71,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:71.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.services</span>
++                    <a href="org/carlspring/strongbox/services/pkg-summary.html" title="org.carlspring.strongbox.services">org.carlspring.strongbox.services</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.0337837</span>
++            2,03
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">306.0</span>
++            306
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7225748</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7225748</span>72,3%</div><div style="display: table-cell">
++ <div title="72,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:72.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.datastore</span>
++                    <a href="org/carlspring/strongbox/providers/datastore/pkg-summary.html" title="org.carlspring.strongbox.providers.datastore">org.carlspring.strongbox.providers.datastore</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1111112</span>
++            1,11
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">7.0</span>
++            7
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7307692</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7307692</span>73,1%</div><div style="display: table-cell">
++ <div title="73,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:73.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.io</span>
++                    <a href="org/carlspring/strongbox/providers/io/pkg-summary.html" title="org.carlspring.strongbox.providers.io">org.carlspring.strongbox.providers.io</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4798206</span>
++            1,48
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">261.0</span>
++            261
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7387387</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7387387</span>73,9%</div><div style="display: table-cell">
++ <div title="73,9% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:73.9%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.metadata.maven.comparators</span>
++                    <a href="org/carlspring/strongbox/storage/metadata/maven/comparators/pkg-summary.html" title="org.carlspring.strongbox.storage.metadata.maven.comparators">org.carlspring.strongbox.storage.metadata.maven.comparators</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">6.0</span>
++            6
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.75</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.75</span>75%</div><div style="display: table-cell">
++ <div title="75% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:75%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.repository</span>
++                    <a href="org/carlspring/strongbox/storage/repository/pkg-summary.html" title="org.carlspring.strongbox.storage.repository">org.carlspring.strongbox.storage.repository</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">4.0</span>
++            4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1128205</span>
++            1,11
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">129.0</span>
++            129
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.75</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.75</span>75%</div><div style="display: table-cell">
++ <div title="75% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:75%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.utils</span>
++                    <a href="org/carlspring/strongbox/utils/pkg-summary.html" title="org.carlspring.strongbox.utils">org.carlspring.strongbox.utils</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">5.0</span>
++            5
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.75</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.75</span>75%</div><div style="display: table-cell">
++ <div title="75% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:75%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.checksum</span>
++                    <a href="org/carlspring/strongbox/storage/checksum/pkg-summary.html" title="org.carlspring.strongbox.storage.checksum">org.carlspring.strongbox.storage.checksum</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.2</span>
++            1,2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">25.0</span>
++            25
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.75490195</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.75490195</span>75,5%</div><div style="display: table-cell">
++ <div title="75,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:75.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.artifact.locator</span>
++                    <a href="org/carlspring/strongbox/artifact/locator/pkg-summary.html" title="org.carlspring.strongbox.artifact.locator">org.carlspring.strongbox.artifact.locator</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.5</span>
++            2,5
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">31.0</span>
++            31
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7559055</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7559055</span>75,6%</div><div style="display: table-cell">
++ <div title="75,6% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:75.6%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.indexing</span>
++                    <a href="org/carlspring/strongbox/storage/indexing/pkg-summary.html" title="org.carlspring.strongbox.storage.indexing">org.carlspring.strongbox.storage.indexing</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">4.0</span>
++            4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.47</span>
++            1,47
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">104.0</span>
++            104
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.7714286</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.7714286</span>77,1%</div><div style="display: table-cell">
++ <div title="77,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:77.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.repository.remote</span>
++                    <a href="org/carlspring/strongbox/storage/repository/remote/pkg-summary.html" title="org.carlspring.strongbox.storage.repository.remote">org.carlspring.strongbox.storage.repository.remote</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1481482</span>
++            1,15
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">33.0</span>
++            33
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.78846157</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.78846157</span>78,8%</div><div style="display: table-cell">
++ <div title="78,8% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:78.8%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.version</span>
++                    <a href="org/carlspring/strongbox/storage/validation/version/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.version">org.carlspring.strongbox.storage.validation.version</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.8333334</span>
++            1,83
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">8.0</span>
++            8
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8095238</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8095238</span>81%</div><div style="display: table-cell">
++ <div title="81% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:81%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.repository.group.metadata</span>
++                    <a href="org/carlspring/strongbox/repository/group/metadata/pkg-summary.html" title="org.carlspring.strongbox.repository.group.metadata">org.carlspring.strongbox.repository.group.metadata</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4</span>
++            1,4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8235294</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8235294</span>82,4%</div><div style="display: table-cell">
++ <div title="82,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:82.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.booters</span>
++                    <a href="org/carlspring/strongbox/booters/pkg-summary.html" title="org.carlspring.strongbox.booters">org.carlspring.strongbox.booters</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5333333</span>
++            1,53
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">15.0</span>
++            15
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8255814</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8255814</span>82,6%</div><div style="display: table-cell">
++ <div title="82,6% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:82.6%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.services.support</span>
++                    <a href="org/carlspring/strongbox/services/support/pkg-summary.html" title="org.carlspring.strongbox.services.support">org.carlspring.strongbox.services.support</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.7272727</span>
++            1,73
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">19.0</span>
++            19
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8318584</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8318584</span>83,2%</div><div style="display: table-cell">
++ <div title="83,2% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:83.2%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.validation.resource</span>
++                    <a href="org/carlspring/strongbox/storage/validation/resource/pkg-summary.html" title="org.carlspring.strongbox.storage.validation.resource">org.carlspring.strongbox.storage.validation.resource</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.5</span>
++            2,5
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">10.0</span>
++            10
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8333333</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8333333</span>83,3%</div><div style="display: table-cell">
++ <div title="83,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:83.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.nuget</span>
++                    <a href="org/carlspring/strongbox/nuget/pkg-summary.html" title="org.carlspring.strongbox.nuget">org.carlspring.strongbox.nuget</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.35</span>
++            1,35
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">14.0</span>
++            14
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8352941</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8352941</span>83,5%</div><div style="display: table-cell">
++ <div title="83,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:83.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.indexing.local</span>
++                    <a href="org/carlspring/strongbox/storage/indexing/local/pkg-summary.html" title="org.carlspring.strongbox.storage.indexing.local">org.carlspring.strongbox.storage.indexing.local</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.030303</span>
++            2,03
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">32.0</span>
++            32
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8632479</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8632479</span>86,3%</div><div style="display: table-cell">
++ <div title="86,3% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:86.3%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.repository.group</span>
++                    <a href="org/carlspring/strongbox/repository/group/pkg-summary.html" title="org.carlspring.strongbox.repository.group">org.carlspring.strongbox.repository.group</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5333333</span>
++            1,53
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">10.0</span>
++            10
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8648649</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8648649</span>86,5%</div><div style="display: table-cell">
++ <div title="86,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:86.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.dependency</span>
++                    org.carlspring.strongbox.dependency
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3529412</span>
++            1,35
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">23.0</span>
++            23
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.86549705</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.86549705</span>86,5%</div><div style="display: table-cell">
++ <div title="86,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:86.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.dependency.snippet</span>
++                    <a href="org/carlspring/strongbox/dependency/snippet/pkg-summary.html" title="org.carlspring.strongbox.dependency.snippet">org.carlspring.strongbox.dependency.snippet</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3529412</span>
++            1,35
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">23.0</span>
++            23
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.86549705</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.86549705</span>86,5%</div><div style="display: table-cell">
++ <div title="86,5% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:86.5%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.util</span>
++                    <a href="org/carlspring/strongbox/util/pkg-summary.html" title="org.carlspring.strongbox.util">org.carlspring.strongbox.util</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.7692308</span>
++            2,77
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">18.0</span>
++            18
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.8807947</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.8807947</span>88,1%</div><div style="display: table-cell">
++ <div title="88,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:88.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.nuget.filter</span>
++                    <a href="org/carlspring/strongbox/nuget/filter/pkg-summary.html" title="org.carlspring.strongbox.nuget.filter">org.carlspring.strongbox.nuget.filter</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.5833334</span>
++            1,58
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">8.0</span>
++            8
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.884058</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.884058</span>88,4%</div><div style="display: table-cell">
++ <div title="88,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:88.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.repository.remote.heartbeat</span>
++                    <a href="org/carlspring/strongbox/storage/repository/remote/heartbeat/pkg-summary.html" title="org.carlspring.strongbox.storage.repository.remote.heartbeat">org.carlspring.strongbox.storage.repository.remote.heartbeat</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.3888888</span>
++            1,39
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">8.0</span>
++            8
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.89041096</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.89041096</span>89%</div><div style="display: table-cell">
++ <div title="89% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:89%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.routing</span>
++                    <a href="org/carlspring/strongbox/storage/routing/pkg-summary.html" title="org.carlspring.strongbox.storage.routing">org.carlspring.strongbox.storage.routing</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.1666666</span>
++            1,17
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">13.0</span>
++            13
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.9097222</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.9097222</span>91%</div><div style="display: table-cell">
++ <div title="91% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:91%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.indexing.group</span>
++                    <a href="org/carlspring/strongbox/storage/indexing/group/pkg-summary.html" title="org.carlspring.strongbox.storage.indexing.group">org.carlspring.strongbox.storage.indexing.group</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.4</span>
++            1,4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">2.0</span>
++            2
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.9285714</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.9285714</span>92,9%</div><div style="display: table-cell">
++ <div title="92,9% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:92.9%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.config</span>
++                    <a href="org/carlspring/strongbox/config/pkg-summary.html" title="org.carlspring.strongbox.config">org.carlspring.strongbox.config</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">6.0</span>
++            6
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.92941177</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.92941177</span>92,9%</div><div style="display: table-cell">
++ <div title="92,9% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:92.9%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.providers.repository.group</span>
++                    <a href="org/carlspring/strongbox/providers/repository/group/pkg-summary.html" title="org.carlspring.strongbox.providers.repository.group">org.carlspring.strongbox.providers.repository.group</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.875</span>
++            1,88
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">4.0</span>
++            4
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.93442625</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.93442625</span>93,4%</div><div style="display: table-cell">
++ <div title="93,4% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:93.4%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                                                                                                <tr>
++    <td>
++                <span class="sortValue">org.carlspring.strongbox.storage.repository.remote.heartbeat.monitor</span>
++                    <a href="org/carlspring/strongbox/storage/repository/remote/heartbeat/monitor/pkg-summary.html" title="org.carlspring.strongbox.storage.repository.remote.heartbeat.monitor">org.carlspring.strongbox.storage.repository.remote.heartbeat.monitor</a>
++                    </td>
++
++                
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.0</span>
++            0%
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">3.0</span>
++            3
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">1.0</span>
++            1
++        </td>
++        
++            
++        <td class=" " align="right">
++            <span class="sortValue">0.9411765</span>
++            <div style="display: table; width: 100%">
++<div class="barGraphValue"><span class="sortValue">0.9411765</span>94,1%</div><div style="display: table-cell">
++ <div title="94,1% Covered"  style="min-width:200px;" class="barNegative contribBarNegative "><div class="barPositive contribBarPositive " style="width:94.1%"></div></div></div></div>
++        </td>
++        
++    </tr>
++                                                </tbody>
++        </table>
++
++    </div> <!-- tabs-pane active-pane -->
++</div> <!-- aui-tabs horizontal-tabs -->
++
++                        </div> <!-- class="aui-page-panel-content-clover" -->
++                    <footer id="footer" role="contentinfo">
++    <section class="footer-body">
++        <ul>
++            <li>
++                Report generated by <a target="_new" href="http://openclover.org">OpenClover</a> v 4.4.1
++                on Mon Feb 17 2020 21:49:05 CET using coverage data from Mon Feb 17 2020 21:48:18 CET.
++            </li>
++        </ul>
++        <ul>
++            <li>OpenClover is free and open-source software. </li>
++        </ul>
++    </section>
++</footer>                </section> <!-- class="aui-page-panel-content" -->
++            </div> <!-- class="aui-page-panel-inner" -->
++        </div> <!-- class="aui-page-panel" -->
++    </div> <!-- id="page" -->
++</body>
++</html>
+\ No newline at end of file
