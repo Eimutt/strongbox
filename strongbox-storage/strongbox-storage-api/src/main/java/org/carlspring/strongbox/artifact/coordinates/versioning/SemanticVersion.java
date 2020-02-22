@@ -606,13 +606,26 @@ public class SemanticVersion
 
     public static boolean setBranch(int b){
       cover[b] = true;
+      System.out.println("----------------------------                 ----------------------------");
+      System.out.println("---------------------------- BRANCH "+b+"    ----------------------------");
+      System.out.println("----------------------------                 ----------------------------");
       return true;
     }
 
+
+    /**
+     * Give an ordering between two SemanticVersion through their attributes,
+     * i.e. major, minor, patch and special.
+     * @param  other the other SemanticVersion compared to this
+     * @return  {-1,0,1} respectively when this is smaller, equal or greater than other.
+     */
     @Override
     public int compareTo(final SemanticVersion other)
     {
         setBranch(0);
+        System.out.println("----------------------------                 ----------------------------");
+        System.out.println("----------------------------    BRANCH 0     ----------------------------");
+        System.out.println("----------------------------                 ----------------------------");
         if (equals(other))
         {
             setBranch(1);
