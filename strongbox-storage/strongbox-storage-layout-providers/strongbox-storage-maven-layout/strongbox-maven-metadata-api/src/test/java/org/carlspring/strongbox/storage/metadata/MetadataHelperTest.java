@@ -70,11 +70,6 @@ public class MetadataHelperTest
         createPluginXmlFile();
         crateJarFile();
     }
-
-    @AfterAll
-    public static void getCoverage(){
-        VersionCollector.printResultCoverage();
-    }
     
     @AfterAll
     public static void down()

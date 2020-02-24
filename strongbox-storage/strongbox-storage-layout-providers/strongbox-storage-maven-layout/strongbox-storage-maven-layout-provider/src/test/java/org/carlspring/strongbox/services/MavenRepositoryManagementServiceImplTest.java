@@ -2,6 +2,7 @@ package org.carlspring.strongbox.services;
 
 import org.carlspring.strongbox.config.Maven2LayoutProviderTestConfig;
 import org.carlspring.strongbox.providers.io.RepositoryPathResolver;
+import org.carlspring.strongbox.storage.metadata.VersionCollector;
 import org.carlspring.strongbox.storage.repository.Repository;
 import org.carlspring.strongbox.testing.MavenIndexedRepositorySetup;
 import org.carlspring.strongbox.testing.repository.MavenRepository;
@@ -11,6 +12,7 @@ import javax.inject.Inject;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -66,6 +68,11 @@ public class MavenRepositoryManagementServiceImplTest
         repositoryManagementService.removeRepository(storageId, repositoryId);
 
         assertThat(Files.notExists(repositoryPath)).as("Failed to remove the repository!").isTrue();
+    }
+
+    @AfterAll
+    public static void getCoverage(){
+        VersionCollector.printResultCoverage();
     }
 
 }

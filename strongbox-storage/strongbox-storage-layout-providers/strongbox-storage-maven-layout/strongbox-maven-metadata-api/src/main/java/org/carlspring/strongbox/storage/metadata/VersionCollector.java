@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VersionCollector
 {
-    public static boolean visited_branches[] = new boolean[20];
+    public static boolean visited_branches[] = new boolean[21];
 
     private static final Logger logger = LoggerFactory.getLogger(VersionCollector.class);
 
@@ -61,47 +61,51 @@ public class VersionCollector
         try (DirectoryStream<Path> ds = Files.newDirectoryStream(artifactBasePath,
                                                                  new ArtifactVersionDirectoryFilter()))
         {
+            //not counting this try towards cyclomatic complexity since the error is thrown upwards outside this class.
+            visited_branches[0]=true;
             versionPaths = Lists.newArrayList(ds);
         }
 
         // Add all versions
         for (Path versionDirectoryPath : versionPaths)
         {
-            visited_branches[0]=true;
+            //we enter for loop: CC = 1
+            visited_branches[1]=true;
             try
             {
-                visited_branches[15]=true;
+                //we enter a try/catch block, CC = 2
+                visited_branches[2]=true;
                 Path pomArtifactPath = getPomPath(artifactBasePath, versionDirectoryPath);
 
-                // No pom, no metadata.
+                //entering if/else, CC = 3
                 if (pomArtifactPath != null)
                 {
-                    visited_branches[1] = true;
+                    visited_branches[3] = true;
                     Model pom = getPom(pomArtifactPath);
 
                     BasicFileAttributes fileAttributes = Files.readAttributes(versionDirectoryPath,
                                                                               BasicFileAttributes.class);
 
-                    // TODO: This will not work for versionless POM-s which extend the version from a parent.
-                    // TODO: If pom.getVersion() == null, walk the parents until a parent with
-                    // TODO: a non-null version is found and use that as the version.
-                    String version = pom.getVersion() != null ? testHelp(pom.getVersion(),2) :
-                                     (pom.getParent() != null ? testHelp(pom.getVersion(),3) : testHelp(null,4));
+                    //double if statement, CC = 5
+                    String version = pom.getVersion() != null ? testHelp(pom.getVersion(),4) :
+                                     (pom.getParent() != null ? testHelp(pom.getVersion(),5) : testHelp(null,6));
 
+                    //entering if/else, CC = 6
                     if (version == null)
                     {
-                        visited_branches[5]=true;
+                        visited_branches[7]=true;
                         continue;
                     }else{
-                        visited_branches[6]=true;
+                        visited_branches[8]=true;
                     }
 
+                    //entering if/else, CC = 7
                     if (ArtifactUtils.isSnapshot(version))
                     {
-                        visited_branches[7]=true;
+                        visited_branches[9]=true;
                         version = ArtifactUtils.toSnapshotVersion(version);
                     }else{
-                        visited_branches[8]=true;
+                        visited_branches[10]=true;
                     }
 
                     MetadataVersion metadataVersion = new MetadataVersion();
@@ -110,10 +114,12 @@ public class VersionCollector
 
                     versions.add(metadataVersion);
 
+                    //entering if/else, CC = 8
                     if (artifactIsPlugin(pom))
                     {
-                        visited_branches[9]=true;
-                        String name = pom.getName() != null ? testHelp(pom.getName(),10) : testHelp(pom.getArtifactId(),11);
+                        visited_branches[11]=true;
+                        //another if/else, CC = 9
+                        String name = pom.getName() != null ? testHelp(pom.getName(),12) : testHelp(pom.getArtifactId(),13);
 
                         // TODO: SB-339: Get the maven plugin's prefix properly when generating metadata
                         // TODO: This needs to be addressed properly, as it's not correct.
@@ -128,34 +134,35 @@ public class VersionCollector
 
                         request.addPlugin(plugin);
                     }else{
-                        visited_branches[12]=true;
+                        visited_branches[14]=true;
                     }
                 }else{
-                    visited_branches[13]=true;
+                    visited_branches[15]=true;
                 }
             }
             catch (XmlPullParserException | IOException e)
             {
-                visited_branches[14]=true;
+                visited_branches[16]=true;
                 logger.error("POM file '{}' appears to be corrupt.", versionDirectoryPath.toAbsolutePath(), e);
             }
         }
-        visited_branches[16]=true;
+        visited_branches[17]=true;
 
 
-        // 1.1 < 1.2 < 1.3 ....
+        //entering if/else, CC = 10
         if (!versions.isEmpty())
         {
-            visited_branches[17]=true;
+            visited_branches[18]=true;
             Collections.sort(versions, new MetadataVersionComparator());
         }else{
-            visited_branches[18]=true;
+            visited_branches[19]=true;
         }
 
         request.setMetadataVersions(versions);
         request.setVersioning(generateVersioning(versions));
 
-        visited_branches[19]=true;
+        //reached return, CC = 11
+        visited_branches[20]=true;
         return request;
     }
 
@@ -168,9 +175,6 @@ public class VersionCollector
         PrintWriter writer = null;
         try{
             writer = new PrintWriter("../../CoverageVersionCollector.txt", "UTF-8");
-            writer.println("----------------------------                 ----------------------------");
-            writer.println("---------------------------- OUTPUT COVERAGE ----------------------------");
-            writer.println("--------------------------  VersionCollector  ---------------------------");
             for (int i = 0 ; i < visited_branches.length; i++) {
                 writer.println("Branch "+i+" -> "+visited_branches[i]);
             }

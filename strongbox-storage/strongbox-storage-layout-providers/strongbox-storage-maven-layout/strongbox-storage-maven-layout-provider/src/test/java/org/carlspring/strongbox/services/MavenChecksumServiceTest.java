@@ -1,6 +1,7 @@
 package org.carlspring.strongbox.services;
 
 import org.carlspring.strongbox.config.Maven2LayoutProviderTestConfig;
+import org.carlspring.strongbox.storage.indexing.local.ArtifactEntryJarFileContentsIndexCreator;
 import org.carlspring.strongbox.storage.repository.Repository;
 import org.carlspring.strongbox.testing.artifact.ArtifactManagementTestExecutionListener;
 import org.carlspring.strongbox.testing.artifact.MavenTestArtifact;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -401,6 +403,11 @@ public class MavenChecksumServiceTest
         assertThat(Files.size(artifactMetadataMd5) > 0)
                 .as("The checksum file for metadata is empty!")
                 .isTrue();
+    }
+
+    @AfterAll
+    public static void getCoverage(){
+        ArtifactEntryJarFileContentsIndexCreator.printResultCoverage();
     }
 
 }
