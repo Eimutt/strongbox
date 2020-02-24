@@ -232,6 +232,42 @@ public class VersionRangeTest
     }
 
     /**
+    * Parsing test of when version string is null.
+    * @throws Exception
+    *             error during the test
+    */
+    @Test
+    public void testParseNull()
+        throws Exception
+    {
+        String versionString = null;
+        VersionRange versionRange = VersionRange.parse(versionString);
+
+        assertThat(versionRange.getLowVersion()).as("Lower Bound").isNull();
+        assertThat(versionRange.getLowBorderType()).as("Type lower border").isNull();
+        assertThat(versionRange.getTopVersion()).as("Upper bound").isNull();
+        assertThat(versionRange.getTopBorderType()).as("Type of upper border").isNull();
+    }
+
+    /**
+    * Parsing test of when version string only has a comma inside the parentheses.
+    * @throws Exception
+    *             error during the test
+    */
+    @Test
+    public void testEmpty()
+        throws Exception
+    {
+        String versionString = "(,)";
+        VersionRange versionRange = VersionRange.parse(versionString);
+
+        assertThat(versionRange.getLowVersion()).as("Lower Bound").isNull();
+        assertThat(versionRange.getLowBorderType()).as("Type lower border").isNull();
+        assertThat(versionRange.getTopVersion()).as("Upper bound").isNull();
+        assertThat(versionRange.getTopBorderType()).as("Type of upper border").isNull();
+    }
+
+    /**
      * Parsing test of the range is not limited from above
      *
      * @throws Exception
