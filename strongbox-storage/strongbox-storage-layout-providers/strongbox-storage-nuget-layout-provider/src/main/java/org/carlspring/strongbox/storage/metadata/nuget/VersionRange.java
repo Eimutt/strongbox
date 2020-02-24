@@ -394,7 +394,7 @@ public class VersionRange implements Serializable
         {
             if (versionRangeString == null) {
               parse_covered_branches[0] = true;
-            } else {
+            } else if (versionRangeString.isEmpty()){
               parse_covered_branches[1] = true;
             }
             return new VersionRange();
