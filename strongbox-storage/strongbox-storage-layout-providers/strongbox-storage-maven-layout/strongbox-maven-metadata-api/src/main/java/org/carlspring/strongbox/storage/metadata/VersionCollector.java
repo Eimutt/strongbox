@@ -8,6 +8,7 @@ import org.carlspring.strongbox.storage.metadata.maven.visitors.ArtifactVersionD
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VersionCollector
 {
+    public static boolean visited_branches[] = new boolean[20];
 
     private static final Logger logger = LoggerFactory.getLogger(VersionCollector.class);
 
@@ -65,13 +67,16 @@ public class VersionCollector
         // Add all versions
         for (Path versionDirectoryPath : versionPaths)
         {
+            visited_branches[0]=true;
             try
             {
+                visited_branches[15]=true;
                 Path pomArtifactPath = getPomPath(artifactBasePath, versionDirectoryPath);
 
                 // No pom, no metadata.
                 if (pomArtifactPath != null)
                 {
+                    visited_branches[1] = true;
                     Model pom = getPom(pomArtifactPath);
 
                     BasicFileAttributes fileAttributes = Files.readAttributes(versionDirectoryPath,
@@ -80,17 +85,23 @@ public class VersionCollector
                     // TODO: This will not work for versionless POM-s which extend the version from a parent.
                     // TODO: If pom.getVersion() == null, walk the parents until a parent with
                     // TODO: a non-null version is found and use that as the version.
-                    String version = pom.getVersion() != null ? pom.getVersion() :
-                                     (pom.getParent() != null ? pom.getVersion() : null);
+                    String version = pom.getVersion() != null ? testHelp(pom.getVersion(),2) :
+                                     (pom.getParent() != null ? testHelp(pom.getVersion(),3) : testHelp(null,4));
 
                     if (version == null)
                     {
+                        visited_branches[5]=true;
                         continue;
+                    }else{
+                        visited_branches[6]=true;
                     }
 
                     if (ArtifactUtils.isSnapshot(version))
                     {
+                        visited_branches[7]=true;
                         version = ArtifactUtils.toSnapshotVersion(version);
+                    }else{
+                        visited_branches[8]=true;
                     }
 
                     MetadataVersion metadataVersion = new MetadataVersion();
@@ -101,7 +112,8 @@ public class VersionCollector
 
                     if (artifactIsPlugin(pom))
                     {
-                        String name = pom.getName() != null ? pom.getName() : pom.getArtifactId();
+                        visited_branches[9]=true;
+                        String name = pom.getName() != null ? testHelp(pom.getName(),10) : testHelp(pom.getArtifactId(),11);
 
                         // TODO: SB-339: Get the maven plugin's prefix properly when generating metadata
                         // TODO: This needs to be addressed properly, as it's not correct.
@@ -115,26 +127,60 @@ public class VersionCollector
                         plugin.setPrefix(PluginDescriptor.getGoalPrefixFromArtifactId(pom.getArtifactId()));
 
                         request.addPlugin(plugin);
+                    }else{
+                        visited_branches[12]=true;
                     }
+                }else{
+                    visited_branches[13]=true;
                 }
             }
             catch (XmlPullParserException | IOException e)
             {
+                visited_branches[14]=true;
                 logger.error("POM file '{}' appears to be corrupt.", versionDirectoryPath.toAbsolutePath(), e);
             }
         }
+        visited_branches[16]=true;
+
 
         // 1.1 < 1.2 < 1.3 ....
         if (!versions.isEmpty())
         {
+            visited_branches[17]=true;
             Collections.sort(versions, new MetadataVersionComparator());
+        }else{
+            visited_branches[18]=true;
         }
 
         request.setMetadataVersions(versions);
         request.setVersioning(generateVersioning(versions));
 
+        visited_branches[19]=true;
         return request;
     }
+
+    private String testHelp(String test, int branchN){
+        visited_branches[branchN] = true;
+        return test;
+    }
+
+    public static void printResultCoverage(){
+        PrintWriter writer = null;
+        try{
+            writer = new PrintWriter("../../CoverageVersionCollector.txt", "UTF-8");
+            writer.println("----------------------------                 ----------------------------");
+            writer.println("---------------------------- OUTPUT COVERAGE ----------------------------");
+            writer.println("--------------------------  VersionCollector  ---------------------------");
+            for (int i = 0 ; i < visited_branches.length; i++) {
+                writer.println("Branch "+i+" -> "+visited_branches[i]);
+            }
+        } catch(Exception e){
+            System.err.println(e);
+        } finally{
+            writer.close();
+        }
+    }
+
 
     private Path getPomPath(Path artifactBasePath,
                             Path versionDirectoryPath)
