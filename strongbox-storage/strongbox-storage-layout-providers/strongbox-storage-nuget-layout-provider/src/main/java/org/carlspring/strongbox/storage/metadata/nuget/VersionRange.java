@@ -102,7 +102,7 @@ public class VersionRange implements Serializable
     /**
     * Coverage of each branch for parse function
     */
-    private static boolean[] parse_covered_branches = new boolean[13];
+    private static boolean[] parse_covered_branches = new boolean[12];
 
     /**
     * Coverage of each branch for parse function
@@ -478,7 +478,7 @@ public class VersionRange implements Serializable
                 writer2.println("Branch " + i + ": " + to_string_covered_branches[i]);
             }
             writer2.close();
-            
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
