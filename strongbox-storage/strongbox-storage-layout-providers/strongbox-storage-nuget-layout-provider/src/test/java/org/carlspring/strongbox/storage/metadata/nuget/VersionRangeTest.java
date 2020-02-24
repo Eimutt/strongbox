@@ -19,6 +19,7 @@ package org.carlspring.strongbox.storage.metadata.nuget;
 
 import org.carlspring.strongbox.artifact.coordinates.versioning.SemanticVersion;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -402,5 +403,10 @@ public class VersionRangeTest
         assertThat(versionRange.getTopVersion()).as("Upper Bound").isNull();
         assertThat(versionRange.getTopBorderType()).as("Type of upper border").isNull();
         assertThat(versionRange.isLatestVersion()).as("fixed version").isTrue();
+    }
+
+    @AfterEach
+    public void printTestCoverage() {
+      VersionRange.printCoverage();
     }
 }

@@ -20,10 +20,13 @@ package org.carlspring.strongbox.storage.metadata.nuget;
 import org.carlspring.strongbox.artifact.coordinates.versioning.SemanticVersion;
 
 import javax.annotation.Nonnull;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.PrintWriter;
+import java.io.File;
 
 /**
  * Range of versions
@@ -95,6 +98,11 @@ public class VersionRange implements Serializable
      * Version on the upper border
      */
     private SemanticVersion topVersion;
+
+    /**
+    * Coverage of each branch
+    */
+    private static boolean[] covered_branches = new boolean[13];
 
     /**
      * @return range indicates the latest version of the package.
@@ -367,27 +375,41 @@ public class VersionRange implements Serializable
     {
         if (versionRangeString == null || versionRangeString.isEmpty())
         {
+            if (versionRangeString == null) {
+              covered_branches[0] = true;
+            } else {
+              covered_branches[1] = true;
+            }
             return new VersionRange();
+        } else {
+          covered_branches[2] = true;
         }
 
         SemanticVersion version = tryParseVersion(versionRangeString, true/* silent */);
         if (version != null)
         {
+            covered_branches[3] = true;
             return new VersionRange(version, BorderType.INCLUDE, null, null);
+        } else {
+          covered_branches[4] = true;
         }
 
         Pattern pattern = Pattern.compile("^" + FULL_VERSION_RANGE_PATTERN + "$");
         Matcher matcher = pattern.matcher(versionRangeString);
         if (matcher.matches())
         {
+            covered_branches[5] = true;
             SemanticVersion lowVersion = null;
             BorderType lowBorder = null;
 
             String lowVersionString = matcher.group("left");
             if (!lowVersionString.isEmpty())
             {
+                covered_branches[7] = true;
                 lowVersion = tryParseVersion(lowVersionString, false/* silent */);
                 lowBorder = BorderType.getBorderType(matcher.group("leftBorder"));
+            } else {
+              covered_branches[8] = true;
             }
 
             SemanticVersion topVersion = null;
@@ -396,26 +418,46 @@ public class VersionRange implements Serializable
             String topVersionString = matcher.group("right");
             if (!topVersionString.isEmpty())
             {
+                covered_branches[9] = true;
                 topVersion = tryParseVersion(topVersionString, false/* silent */);
                 topBorder = BorderType.getBorderType(matcher.group("rightBorder"));
+            } else {
+                covered_branches[10] = true;
             }
 
             return new VersionRange(lowVersion, lowBorder, topVersion, topBorder);
+        } else {
+          covered_branches[6] = true;
         }
 
         Pattern fixedVersionPattern = Pattern.compile("^" + FIXED_VERSION_RANGE_PATTERN + "$");
         Matcher fixedVersionMatcher = fixedVersionPattern.matcher(versionRangeString);
         if (fixedVersionMatcher.matches())
         {
+            covered_branches[11] = true;
             version = tryParseVersion(fixedVersionMatcher.group(1), false/*
                                                                           * silent
                                                                           */);
 
             return new VersionRange(version, BorderType.INCLUDE, version, BorderType.INCLUDE);
+        } else {
+          covered_branches[12] = true;
         }
 
         throw new NugetFormatException(
                 "<" + versionRangeString + "> does not match a semantic version or a version range.");
+    }
+
+    public static void printCoverage() {
+        try {
+            PrintWriter writer = new PrintWriter("version_range_coverage.txt");
+            for (int i = 0; i < covered_branches.length; i++) {
+                writer.println("Branch " + i + ": " + covered_branches[i]);
+            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private static SemanticVersion tryParseVersion(@Nonnull
