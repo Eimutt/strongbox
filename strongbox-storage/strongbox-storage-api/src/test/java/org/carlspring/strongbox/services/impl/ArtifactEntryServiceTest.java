@@ -366,34 +366,23 @@ public class ArtifactEntryServiceTest
 
     
     @Test
-    public void testQuery(TestInfo testInfo)
+    public void testQuerySkip(TestInfo testInfo)
     {
+
         final String groupId = getGroupId(GROUP_ID, testInfo);
-
-        logger.debug("There are a total of {} artifacts.", count(groupId));
-
-        // prepare search query key (coordinates)
         RawArtifactCoordinates c1 = new RawArtifactCoordinates(groupId + "/" + ARTIFACT_ID + "/");
-
-        List<ArtifactEntry> result = artifactEntryService.findArtifactList(STORAGE_ID,
-                                                                           REPOSITORY_ID,
-                                                                           c1.getCoordinates(),
-                                                                           false);
-        assertThat(result).isNotNull();
-        assertThat(result).isNotEmpty();
-        assertThat(result).hasSize(1);
-
-        result.forEach(artifactEntry ->
-                       {
-                           logger.debug("Found artifact {}", artifactEntry);
-                           assertThat(((RawArtifactCoordinates)artifactEntry.getArtifactCoordinates())
-                                              .getPath().startsWith(groupId + "/" + ARTIFACT_ID)).isTrue();
-                       });
-
-        String query = artifactEntryService.TryQuery(STORAGE_ID, REPOSITORY_ID, c1.getCoordinates(), false);
+        String query = artifactEntryService.TryQuerySkip(STORAGE_ID, REPOSITORY_ID, c1.getCoordinates(), false);
         assertThat(query.contains("SKIP 1"));
+    }
+
+    @Test
+    public void testQueryLimit(TestInfo testInfo)
+    {
+
+        final String groupId = getGroupId(GROUP_ID, testInfo);
+        RawArtifactCoordinates c1 = new RawArtifactCoordinates(groupId + "/" + ARTIFACT_ID + "/");
+        String query = artifactEntryService.TryQueryLimit(STORAGE_ID, REPOSITORY_ID, c1.getCoordinates(), false);
         assertThat(query.contains("LIMIT 1"));
-        assertThat(!(query.contains("LIMIT 2")));
     }
     
     

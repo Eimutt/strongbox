@@ -60,11 +60,20 @@ public interface ArtifactEntryService
                           Map<String, String> coordinates,
                           boolean strict);
 
-    String TryQuery(Collection<Pair<String, String>> storageRepositoryPairList,
+    String TryQueryLimit(Collection<Pair<String, String>> storageRepositoryPairList,
                         Map<String, String> coordinates,
                         boolean strict);
 
-    String TryQuery(String storageId,
+    String TryQueryLimit(String storageId,
+                        String repositoryId,
+                        Map<String, String> coordinates,
+                        boolean strict);
+
+    String TryQuerySkip(Collection<Pair<String, String>> storageRepositoryPairList,
+                        Map<String, String> coordinates,
+                        boolean strict);
+
+    String TryQuerySkip(String storageId,
                         String repositoryId,
                         Map<String, String> coordinates,
                         boolean strict);
