@@ -100,9 +100,14 @@ public class VersionRange implements Serializable
     private SemanticVersion topVersion;
 
     /**
-    * Coverage of each branch
+    * Coverage of each branch for parse function
     */
-    private static boolean[] covered_branches = new boolean[13];
+    private static boolean[] parse_covered_branches = new boolean[13];
+
+    /**
+    * Coverage of each branch for parse function
+    */
+    private static boolean[] to_string_covered_branches = new boolean[10];
 
     /**
      * @return range indicates the latest version of the package.
@@ -321,28 +326,38 @@ public class VersionRange implements Serializable
     public String toString()
     {
         if (isLatestVersion())
-        {
+        {   to_string_covered_branches[0] = true;
             return "";
+        } else {
+          to_string_covered_branches[1] = true;
         }
 
         if (isFixedVersion())
         {
+            to_string_covered_branches[2] = true;
             return "[" + topVersion.toString() + "]";
+        } else {
+          to_string_covered_branches[3] = true;
         }
 
         if (isSimpleRange())
         {
+            to_string_covered_branches[4] = true;
             return lowVersion.toString();
+        } else {
+            to_string_covered_branches[5] = true;
         }
 
         StringBuilder builder = new StringBuilder();
         if (lowVersion != null)
         {
+            to_string_covered_branches[6] = true;
             builder.append(lowBorderType.lowBorderSymbol);
             builder.append(lowVersion.toString());
         }
         else
         {
+            to_string_covered_branches[7] = true;
             builder.append(BorderType.EXCLUDE.lowBorderSymbol);
         }
 
@@ -350,11 +365,13 @@ public class VersionRange implements Serializable
 
         if (topVersion != null)
         {
+            to_string_covered_branches[8] = true;
             builder.append(topVersion.toString());
             builder.append(topBorderType.topBorderSymbol);
         }
         else
         {
+            to_string_covered_branches[9] = true;
             builder.append(BorderType.EXCLUDE.topBorderSymbol);
         }
 
@@ -376,40 +393,40 @@ public class VersionRange implements Serializable
         if (versionRangeString == null || versionRangeString.isEmpty())
         {
             if (versionRangeString == null) {
-              covered_branches[0] = true;
+              parse_covered_branches[0] = true;
             } else {
-              covered_branches[1] = true;
+              parse_covered_branches[1] = true;
             }
             return new VersionRange();
         } else {
-          covered_branches[2] = true;
+          parse_covered_branches[2] = true;
         }
 
         SemanticVersion version = tryParseVersion(versionRangeString, true/* silent */);
         if (version != null)
         {
-            covered_branches[3] = true;
+            parse_covered_branches[3] = true;
             return new VersionRange(version, BorderType.INCLUDE, null, null);
         } else {
-          covered_branches[4] = true;
+          parse_covered_branches[4] = true;
         }
 
         Pattern pattern = Pattern.compile("^" + FULL_VERSION_RANGE_PATTERN + "$");
         Matcher matcher = pattern.matcher(versionRangeString);
         if (matcher.matches())
         {
-            covered_branches[5] = true;
+            parse_covered_branches[5] = true;
             SemanticVersion lowVersion = null;
             BorderType lowBorder = null;
 
             String lowVersionString = matcher.group("left");
             if (!lowVersionString.isEmpty())
             {
-                covered_branches[7] = true;
+                parse_covered_branches[7] = true;
                 lowVersion = tryParseVersion(lowVersionString, false/* silent */);
                 lowBorder = BorderType.getBorderType(matcher.group("leftBorder"));
             } else {
-              covered_branches[8] = true;
+              parse_covered_branches[8] = true;
             }
 
             SemanticVersion topVersion = null;
@@ -418,30 +435,30 @@ public class VersionRange implements Serializable
             String topVersionString = matcher.group("right");
             if (!topVersionString.isEmpty())
             {
-                covered_branches[9] = true;
+                parse_covered_branches[9] = true;
                 topVersion = tryParseVersion(topVersionString, false/* silent */);
                 topBorder = BorderType.getBorderType(matcher.group("rightBorder"));
             } else {
-                covered_branches[10] = true;
+                parse_covered_branches[10] = true;
             }
 
             return new VersionRange(lowVersion, lowBorder, topVersion, topBorder);
         } else {
-          covered_branches[6] = true;
+          parse_covered_branches[6] = true;
         }
 
         Pattern fixedVersionPattern = Pattern.compile("^" + FIXED_VERSION_RANGE_PATTERN + "$");
         Matcher fixedVersionMatcher = fixedVersionPattern.matcher(versionRangeString);
         if (fixedVersionMatcher.matches())
         {
-            covered_branches[11] = true;
+            parse_covered_branches[11] = true;
             version = tryParseVersion(fixedVersionMatcher.group(1), false/*
                                                                           * silent
                                                                           */);
 
             return new VersionRange(version, BorderType.INCLUDE, version, BorderType.INCLUDE);
         } else {
-          covered_branches[12] = true;
+          parse_covered_branches[12] = true;
         }
 
         throw new NugetFormatException(
@@ -451,10 +468,17 @@ public class VersionRange implements Serializable
     public static void printCoverage() {
         try {
             PrintWriter writer = new PrintWriter("version_range_coverage.txt");
-            for (int i = 0; i < covered_branches.length; i++) {
-                writer.println("Branch " + i + ": " + covered_branches[i]);
+            for (int i = 0; i < parse_covered_branches.length; i++) {
+                writer.println("Branch " + i + ": " + parse_covered_branches[i]);
             }
             writer.close();
+
+            PrintWriter writer2 = new PrintWriter("to_string_coverage.txt");
+            for (int i = 0; i < to_string_covered_branches.length; i++) {
+                writer2.println("Branch " + i + ": " + to_string_covered_branches[i]);
+            }
+            writer2.close();
+            
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
