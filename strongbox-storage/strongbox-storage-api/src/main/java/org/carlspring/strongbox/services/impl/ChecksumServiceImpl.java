@@ -38,6 +38,8 @@ public class ChecksumServiceImpl
     @Inject
     private RepositoryPathResolver repositoryPathResolver;
 
+    private boolean testHelper;
+
     @Override
     public void regenerateChecksum(String storageId,
                                    String repositoryId,
@@ -49,6 +51,9 @@ public class ChecksumServiceImpl
         Repository repository = storage.getRepository(repositoryId);
 
         LayoutProvider layoutProvider = layoutProviderRegistry.getProvider(repository.getLayout());
+        if(this.testHelper)
+            layoutProvider = null;
+
         if (layoutProvider == null)
         {
             logger.warn("Trying to regenerate checksum for repository {} but layoutProvider was not found in registry {} ",
@@ -68,6 +73,10 @@ public class ChecksumServiceImpl
         ArtifactDirectoryLocator locator = new ArtifactDirectoryLocator();
         locator.setOperation(operation);
         locator.locateArtifactDirectories();
+    }
+
+    public void setTestHelper(boolean val){
+        this.testHelper = val;
     }
 
     public Configuration getConfiguration()

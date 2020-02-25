@@ -39,6 +39,12 @@ public class ArtifactVersionDirectoryFilter
 
     }
 
+    public boolean acceptTest(final Path entry)
+            throws IOException
+    {
+        return (containsMetadataFiles(entry));
+    }
+
     public void setExcludeHiddenDirectories(final boolean excludeHiddenDirectories)
     {
         this.excludeHiddenDirectories = excludeHiddenDirectories;

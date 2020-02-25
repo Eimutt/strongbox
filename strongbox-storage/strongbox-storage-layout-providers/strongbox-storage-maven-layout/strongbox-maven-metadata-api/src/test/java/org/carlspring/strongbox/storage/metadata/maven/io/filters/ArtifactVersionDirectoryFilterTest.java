@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author mtodorov
@@ -58,4 +59,12 @@ public class ArtifactVersionDirectoryFilterTest
         assertThat(paths).as("Expected three versions.").hasSize(3);
     }
 
+    @Test
+    public void notAPathTest()
+            throws IOException
+    {
+        boolean res = new ArtifactVersionDirectoryFilter().acceptTest(BASEDIR.resolve("com").resolve("foo").resolve("bart"));
+
+        assertEquals(false, res);
+    }
 }

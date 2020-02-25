@@ -22,4 +22,5 @@ public interface ChecksumService
                             boolean forceRegeneration)
             throws IOException;
 
+    void setTestHelper(boolean val);
 }
